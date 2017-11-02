@@ -424,7 +424,7 @@ namespace x937
             // GAAAH!
             checkImageFS = new FileStream(x9File, FileMode.Open, FileAccess.Read, FileShare.Read);
             checkImageBR = new BinaryReader(checkImageFS);
-
+            Directory.CreateDirectory(@"C:\temp\x937-images\");
             foreach (var node in tvx9)
             {
                 var indent = CreateIndent(node.Level);
@@ -486,7 +486,7 @@ namespace x937
                 //pbFront.Image = fImg;
                 //fImg.Dump($"Front: {index}");
                 //fImg.Save($@"C:\temp\x937\{index}-front.tiff");
-                var fname = $@"C:\temp\x937\{index}-{(prev50 == "0" ? "front" : "back")}.tiff";
+                var fname = $@"C:\temp\x937-images\{index}-{(prev50 == "0" ? "front" : "back")}.out";
                 File.WriteAllBytes(fname, recB);
                 //var img = Image.FromFile(fname);
                 //img.Dump();
