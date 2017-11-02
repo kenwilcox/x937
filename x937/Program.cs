@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Text;
+using System.Diagnostics;
 
 namespace x937
 {
@@ -491,116 +492,116 @@ namespace x937
                 //img.Dump();
             }
 
-            return;
-            if (iRecType >= 25 && iRecType < 70) // && Properties.Settings.Default.checkImage)
-            {
-                int curRec = index;
-                string frontImg = null;
-                string backImg = null;
-                //int.TryParse(index, out curRec);
-                x9Rec imgRec = x9Stuff[curRec];
-                while (!(imgRec.recType == "25" || imgRec.recType == "61" || curRec < 0))
-                {
-                    curRec -= 1;
-                    imgRec = x9Stuff[curRec];
-                }
-                if (curRec < 0 || curRec == index)
-                {
-                    return;
-                }
-                if (curRec >= 0)
-                {
-                    //tvX9_AfterSelect_cur25Rec = curRec;
-                    // move forward to first 52
-                    while (!(imgRec.recType == "52" || curRec > x9Stuff.Count))
-                    {
-                        curRec += 1;
-                        imgRec = x9Stuff[curRec];
-                    }
-                    if (curRec < x9Stuff.Count)
-                    {
-                        frontImg = imgRec.recImage;
-                        // move forward to second 52
-                        curRec += 1;
-                        imgRec = x9Stuff[curRec];
-                        while (!(imgRec.recType == "52" || curRec > x9Stuff.Count))
-                        {
-                            curRec += 1;
-                            imgRec = x9Stuff[curRec];
-                        }
-                        if (curRec < x9Stuff.Count)
-                        {
-                            backImg = imgRec.recImage;
-                        }
-                    }
-                }
-//    if (tcX9.TabPages.Count < 2)
-//    {
-//      tcX9.TabPages.Add(tpImg);
-//    }
-//    pbCheck.Visible = false;
-//    pbFront.Visible = true;
-                //Image fImg = null;
-                //Image bImg = null;
-                int startPos = System.Convert.ToInt32(frontImg.Substring(0, frontImg.IndexOf(",")));
-                int imgLen = System.Convert.ToInt32(frontImg.Substring(frontImg.IndexOf(",") + 1));
-                byte[] recB = new byte[imgLen + 1];
-                checkImageBR.BaseStream.Seek(startPos, SeekOrigin.Begin);
-                recB = checkImageBR.ReadBytes(imgLen);
-                //Byte2Image(ref fImg, recB, 0);
-                //pbFront.Image = fImg;
-                //fImg.Dump($"Front: {index}");
-                //fImg.Save($@"C:\temp\x937\{index}-front.tiff");
-                File.WriteAllBytes($@"C:\temp\x937\{index}-front.tiff", recB);
-                //pbBack.Visible = true;
-                startPos = System.Convert.ToInt32(backImg.Substring(0, backImg.IndexOf(",")));
-                imgLen = System.Convert.ToInt32(backImg.Substring(backImg.IndexOf(",") + 1));
-                recB = new byte[imgLen + 1];
-                checkImageBR.BaseStream.Seek(startPos, SeekOrigin.Begin);
-                recB = checkImageBR.ReadBytes(imgLen);
-                //Byte2Image(ref bImg, recB, 0);
-                //bBack.Image = bImg;
-                //bImg.Dump($"Back: {index}");
-                File.WriteAllBytes($@"C:\temp\x937\{index}-back.tiff", recB);
-//    try
-//    {
-//      bImg.Save($@"C:\temp\x937\{index}-back.tiff");
-//    }
-//    catch
-//    {
-//      Console.Error.WriteLine("-------------------------------------------------------------Error Exporting Back Image");
-//    }
-//    onSetImage(fImg, bImg);
-            }
-            else
-            {
-                // I don't think I need to do any of this stuff;
-//    //pbBack.Visible = false;
-//    //pbFront.Visible = false;
-//    //pbCheck.Visible = true;
-//    if (rec.recImage.Length == 0)
-//    {
-//      if (tcX9.TabPages.Count > 1)
-//      {
-//        tcX9.TabPages.RemoveAt(1);
-//      }
-//    }
-//    else
-//    {
-//      if (tcX9.TabPages.Count < 2)
-//      {
-//        tcX9.TabPages.Add(tpImg);
-//      }
-//      Image cImg = null;
-//      int startPos = System.Convert.ToInt32(rec.recImage.Substring(0, rec.recImage.IndexOf(",")));
-//      int imgLen = System.Convert.ToInt32(rec.recImage.Substring(rec.recImage.IndexOf(",") + 1));
-//      byte[] recB = new byte[imgLen + 1];
-//      checkImageBR.BaseStream.Seek(startPos, SeekOrigin.Begin);
-//      recB = checkImageBR.ReadBytes(imgLen);
-//      Byte2Image(ref cImg, recB, 0);
-//      pbFront.Image = cImg;
-//    }
-            }
+//            return;
+//            if (iRecType >= 25 && iRecType < 70) // && Properties.Settings.Default.checkImage)
+//            {
+//                int curRec = index;
+//                string frontImg = null;
+//                string backImg = null;
+//                //int.TryParse(index, out curRec);
+//                x9Rec imgRec = x9Stuff[curRec];
+//                while (!(imgRec.recType == "25" || imgRec.recType == "61" || curRec < 0))
+//                {
+//                    curRec -= 1;
+//                    imgRec = x9Stuff[curRec];
+//                }
+//                if (curRec < 0 || curRec == index)
+//                {
+//                    return;
+//                }
+//                if (curRec >= 0)
+//                {
+//                    //tvX9_AfterSelect_cur25Rec = curRec;
+//                    // move forward to first 52
+//                    while (!(imgRec.recType == "52" || curRec > x9Stuff.Count))
+//                    {
+//                        curRec += 1;
+//                        imgRec = x9Stuff[curRec];
+//                    }
+//                    if (curRec < x9Stuff.Count)
+//                    {
+//                        frontImg = imgRec.recImage;
+//                        // move forward to second 52
+//                        curRec += 1;
+//                        imgRec = x9Stuff[curRec];
+//                        while (!(imgRec.recType == "52" || curRec > x9Stuff.Count))
+//                        {
+//                            curRec += 1;
+//                            imgRec = x9Stuff[curRec];
+//                        }
+//                        if (curRec < x9Stuff.Count)
+//                        {
+//                            backImg = imgRec.recImage;
+//                        }
+//                    }
+//                }
+////    if (tcX9.TabPages.Count < 2)
+////    {
+////      tcX9.TabPages.Add(tpImg);
+////    }
+////    pbCheck.Visible = false;
+////    pbFront.Visible = true;
+//                //Image fImg = null;
+//                //Image bImg = null;
+//                int startPos = System.Convert.ToInt32(frontImg.Substring(0, frontImg.IndexOf(",")));
+//                int imgLen = System.Convert.ToInt32(frontImg.Substring(frontImg.IndexOf(",") + 1));
+//                byte[] recB = new byte[imgLen + 1];
+//                checkImageBR.BaseStream.Seek(startPos, SeekOrigin.Begin);
+//                recB = checkImageBR.ReadBytes(imgLen);
+//                //Byte2Image(ref fImg, recB, 0);
+//                //pbFront.Image = fImg;
+//                //fImg.Dump($"Front: {index}");
+//                //fImg.Save($@"C:\temp\x937\{index}-front.tiff");
+//                File.WriteAllBytes($@"C:\temp\x937\{index}-front.tiff", recB);
+//                //pbBack.Visible = true;
+//                startPos = System.Convert.ToInt32(backImg.Substring(0, backImg.IndexOf(",")));
+//                imgLen = System.Convert.ToInt32(backImg.Substring(backImg.IndexOf(",") + 1));
+//                recB = new byte[imgLen + 1];
+//                checkImageBR.BaseStream.Seek(startPos, SeekOrigin.Begin);
+//                recB = checkImageBR.ReadBytes(imgLen);
+//                //Byte2Image(ref bImg, recB, 0);
+//                //bBack.Image = bImg;
+//                //bImg.Dump($"Back: {index}");
+//                File.WriteAllBytes($@"C:\temp\x937\{index}-back.tiff", recB);
+////    try
+////    {
+////      bImg.Save($@"C:\temp\x937\{index}-back.tiff");
+////    }
+////    catch
+////    {
+////      Console.Error.WriteLine("-------------------------------------------------------------Error Exporting Back Image");
+////    }
+////    onSetImage(fImg, bImg);
+//            }
+//            else
+//            {
+//                // I don't think I need to do any of this stuff;
+////    //pbBack.Visible = false;
+////    //pbFront.Visible = false;
+////    //pbCheck.Visible = true;
+////    if (rec.recImage.Length == 0)
+////    {
+////      if (tcX9.TabPages.Count > 1)
+////      {
+////        tcX9.TabPages.RemoveAt(1);
+////      }
+////    }
+////    else
+////    {
+////      if (tcX9.TabPages.Count < 2)
+////      {
+////        tcX9.TabPages.Add(tpImg);
+////      }
+////      Image cImg = null;
+////      int startPos = System.Convert.ToInt32(rec.recImage.Substring(0, rec.recImage.IndexOf(",")));
+////      int imgLen = System.Convert.ToInt32(rec.recImage.Substring(rec.recImage.IndexOf(",") + 1));
+////      byte[] recB = new byte[imgLen + 1];
+////      checkImageBR.BaseStream.Seek(startPos, SeekOrigin.Begin);
+////      recB = checkImageBR.ReadBytes(imgLen);
+////      Byte2Image(ref cImg, recB, 0);
+////      pbFront.Image = cImg;
+////    }
+//            }
         }
 
 /*
@@ -947,7 +948,6 @@ public void SaveTiffintoSingle(string outFile, EncoderValue compressEncoder)
             }
         }
 
-
         private void Summary_Load(object sender, EventArgs e)
         {
             try
@@ -962,27 +962,44 @@ public void SaveTiffintoSingle(string outFile, EncoderValue compressEncoder)
 
         public void CreateNodeValues()
         {
-            //Debug.WriteLine("CreateNodeValues");
-//    lblHeader.Text = _ifd.BankName.Trim() + " - ICL File Summary";
-//    trvSummary.Nodes.Clear();
-//    trvSummary.Nodes.Add("File Total Amount ($) - " + _ifd.TotalFileAmount);
-//    trvSummary.Nodes[0].Nodes.Add("File Creation Date - " + _ifd.FileCreationDate);
-//    trvSummary.Nodes[0].Nodes.Add("Total No of Records - " + _ifd.TotalNumberofRecords);
-//    trvSummary.Nodes[0].Nodes.Add("Total No of Cash Letter - " + _objCashLetterSummary.Count);
-//    trvSummary.Nodes.Add("Total Cash Letter Amount ($) - " + _objCashLetterSummary.TotalCashLetterAmount);
-//    foreach (ICLCashLetterDetail icd in _objCashLetterSummary)
-//    {
-//      trvSummary.Nodes[1].Nodes.Add("Cash Letter " + icd.CashLetterPosition + " Amount ($) - " + icd.CashLetterAmount);
-//    }
-//    if (_objCreditSummary != null && _objCreditSummary.Count > 0)
-//    {
-//      trvSummary.Nodes[1].Nodes.Add("Total No of Credit Records - " + _objCreditSummary.Count);
-//      trvSummary.Nodes.Add("Total Credit Amount ($) - " + _objCreditSummary.TotalCreditRecordAmount);
-//      foreach (ICLCreditDetail crd in _objCreditSummary)
-//      {
-//        trvSummary.Nodes[2].Nodes.Add(string.Format("Posting bank,{0},{1}", crd.PostingAccBankOnUs.Trim(), crd.CreditAmount));
-//      }
-//    }
+            Debug.WriteLine("CreateNodeValues");
+            Console.WriteLine("**SUMMARY**");
+            var tvSum = new TreeNode<string>(_ifd.BankName.Trim() + " - ICL File Summary");
+            var total = tvSum.AddChild("File Total Amount ($) - " + _ifd.TotalFileAmount);
+            total.AddChild("File Creation Date - " + _ifd.FileCreationDate);
+            total.AddChild("Total No of Records - " + _ifd.TotalNumberofRecords);
+            total.AddChild("Total No of Cash Letter - " + _objCashLetterSummary.Count);
+            var cl = tvSum.AddChild("Total Cash Letter Amount ($) - " + _objCashLetterSummary.TotalCashLetterAmount);
+            foreach (var icd in _objCashLetterSummary)
+            {
+                cl.AddChild("Cash Letter " + icd.CashLetterPosition + " Amount ($) - " + icd.CashLetterAmount);
+            }
+            if (_objCreditSummary != null && _objCreditSummary.Count > 0)
+            {
+                cl.AddChild("Total No of Credit Records - " + _objCreditSummary.Count);
+                var credit = tvSum.AddChild("Total Credit Amount ($) - " + _objCreditSummary.TotalCreditRecordAmount);
+                foreach (ICLCreditDetail crd in _objCreditSummary)
+                {
+                    credit.AddChild($"Posting Bank On-Us {crd.PostingAccBankOnUs.Trim()} Amount ($)- {crd.CreditAmount}");
+                }
+            }
+
+            foreach (var node in tvSum)
+            {
+                var indent = CreateIndent(node.Level);
+                Console.WriteLine($"{indent}{node.Data}");
+            }
+        }
+
+        string CreateIndent(int depth)
+        {
+            depth += 1;
+            var sb = new StringBuilder();
+            for (var i = 0; i < depth * 2; i++)
+            {
+                sb.Append(' ');
+            }
+            return sb.ToString();
         }
 
 //  private void trvSummary_DrawNode(object sender, DrawTreeNodeEventArgs e)
@@ -1006,18 +1023,6 @@ public void SaveTiffintoSingle(string outFile, EncoderValue compressEncoder)
 //      }
 //    }
 //  }
-
-//  private void trvSummary_AfterExpand(object sender, TreeViewEventArgs e)
-//  {
-//    trvSummary.Refresh();
-//  }
-//
-//  private void Summary_FormClosing(object sender, FormClosingEventArgs e)
-//  {
-//    e.Cancel = true;
-//    this.Hide();
-//    this.Parent = null;
-//  }
     }
 
     public class TreeNode<T> : IEnumerable<TreeNode<T>>
@@ -1027,43 +1032,33 @@ public void SaveTiffintoSingle(string outFile, EncoderValue compressEncoder)
         public TreeNode<T> Parent { get; set; }
         public ICollection<TreeNode<T>> Children { get; set; }
 
-        public Boolean IsRoot
-        {
-            get { return Parent == null; }
-        }
+        public bool IsRoot => Parent == null;
 
-        public Boolean IsLeaf
-        {
-            get { return Children.Count == 0; }
-        }
+        public bool IsLeaf => Children.Count == 0;
 
         public int Level
         {
             get
             {
-                if (this.IsRoot)
+                if (IsRoot)
                     return 0;
                 return Parent.Level + 1;
             }
         }
 
-
         public TreeNode(T data)
         {
-            this.Data = data;
-            this.Children = new LinkedList<TreeNode<T>>();
-
-            this.ElementsIndex = new LinkedList<TreeNode<T>>();
-            this.ElementsIndex.Add(this);
+            Data = data;
+            Children = new LinkedList<TreeNode<T>>();
+            ElementsIndex = new LinkedList<TreeNode<T>>();
+            ElementsIndex.Add(this);
         }
 
         public TreeNode<T> AddChild(T child)
         {
-            TreeNode<T> childNode = new TreeNode<T>(child) {Parent = this};
-            this.Children.Add(childNode);
-
-            this.RegisterChildForSearch(childNode);
-
+            var childNode = new TreeNode<T>(child) {Parent = this};
+            Children.Add(childNode);
+            RegisterChildForSearch(childNode);
             return childNode;
         }
 
@@ -1072,7 +1067,6 @@ public void SaveTiffintoSingle(string outFile, EncoderValue compressEncoder)
             return Data != null ? Data.ToString() : "[data null]";
         }
 
-
         #region searching
 
         private ICollection<TreeNode<T>> ElementsIndex { get; set; }
@@ -1080,17 +1074,15 @@ public void SaveTiffintoSingle(string outFile, EncoderValue compressEncoder)
         private void RegisterChildForSearch(TreeNode<T> node)
         {
             ElementsIndex.Add(node);
-            if (Parent != null)
-                Parent.RegisterChildForSearch(node);
+            Parent?.RegisterChildForSearch(node);
         }
 
         public TreeNode<T> FindTreeNode(Func<TreeNode<T>, bool> predicate)
         {
-            return this.ElementsIndex.FirstOrDefault(predicate);
+            return ElementsIndex.FirstOrDefault(predicate);
         }
 
         #endregion
-
 
         #region iterating
 
@@ -1102,7 +1094,7 @@ public void SaveTiffintoSingle(string outFile, EncoderValue compressEncoder)
         public IEnumerator<TreeNode<T>> GetEnumerator()
         {
             yield return this;
-            foreach (var directChild in this.Children)
+            foreach (var directChild in Children)
             {
                 foreach (var anyChild in directChild)
                     yield return anyChild;
