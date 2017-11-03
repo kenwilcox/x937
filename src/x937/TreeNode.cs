@@ -15,6 +15,8 @@ namespace x937
 
         public bool IsLeaf => Children.Count == 0;
 
+        public bool IsBranch => Children.Count != 0;
+
         public int Level
         {
             get
@@ -29,6 +31,7 @@ namespace x937
         {
             Data = data;
             Children = new LinkedList<TreeNode<T>>();
+            // Don't try to simplify object initializer, it breaks the code
             ElementsIndex = new LinkedList<TreeNode<T>>();
             ElementsIndex.Add(this);
         }
@@ -59,6 +62,11 @@ namespace x937
         public TreeNode<T> FindTreeNode(Func<TreeNode<T>, bool> predicate)
         {
             return ElementsIndex.FirstOrDefault(predicate);
+        }
+
+        public List<TreeNode<T>> FindAllTreeNodes(Func<TreeNode<T>, bool> predicate)
+        {
+            return ElementsIndex.Where(predicate).ToList();
         }
 
         #endregion

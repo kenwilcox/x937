@@ -1,0 +1,253 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<records>
+  <record type="01" name="File Header">
+    <field name="Standard level" start="3" end="4" type="N" comments="'Field value must be 03 - Meaning use of the standard DSTU X9.37 – 2003"/>
+    <field name="Test File Indicator" start="5" end="5" type="A" comments="T for Test File, P for Production File"/>
+    <field name="Immediate Destination Routing Number" start="6" end="14" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit"/>
+    <field name="Immediate Origin Routing Number" start="15" end="23" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit"/>
+    <field name="File Creation Date" start="24" end="31" type="N" comments="Must be a valid date in YYYYMMDD format. Eastern time zone shall be used."/>
+    <field name="File Creation Time" start="32" end="35" type="N" comments="Must be military time in HHMM format. Eastern time zone shall be used."/>
+    <field name="Resend Indicator" start="36" end="36" type="A" comments="'N' - Original File or 'Y' - Resend File (Meaning a file that contains the same data as a previously send file.)"/>
+    <field name="Immediate Destination Name" start="37" end="54" type="A" comments="Expanded Field type to support greater variety of abbreviations"/>
+    <field name="Immediate Origin Name" start="55" end="72" type="A" comments="Expanded Field type to support greater variety of abbreviations"/>
+    <field name="File ID Modifier" start="73" end="73" type="AN" comments="This field is used to uniquely identify files. Lower case letters are NOT valid. ID is required if fields 4, 5, 6 and 7 are equal on other files within a file creation date."/>
+    <field name="Country Code" start="74" end="75" type="AB" comments="Blanks"/>
+    <field name="User Field" start="76" end="79" type="AB" comments="Blanks"/>
+    <field name="Reserved" start="80" end="80" type="AB" comments="Blanks"/>
+  </record>
+  <record type="10" name="Cash Letter Header">
+    <field name="Collection Type Indicator" start="3" end="4" type="N" comments="Field value must be '12' or '90' -  Meaning a deposit; the transaction carries value; data are treated as final. Note - Field 2 in Record 10 and 20 must be identical."/>
+    <field name="Destination Routing Number" start="5" end="13" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit"/>
+    <field name="ECE Institution Routing Number" start="14" end="22" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit."/>
+    <field name="Cash Letter Business Date" start="23" end="30" type="N" comments="Must be a valid date in YYYYMMDD format"/>
+    <field name="Cash Letter Creation Date" start="31" end="38" type="N" comments="Must be a valid date in YYYYMMDD format. Eastern time zone shall be used."/>
+    <field name="Cash Letter Creation Time" start="39" end="42" type="N" comments="The time the cash letter is created: (UTC) HHMM
+           HH: '00' thru '23'
+           MM: '00' thru '59'"/>
+    <field name="Cash Letter Record Type Indicator" start="43" end="43" type="A" comments="The only valid values are:
+'I' Forward or Return Image Cash Letter file - Cash letter contains electronic check records (Type 2x’s, 3x’s) and image records (Type 5x’s)
+‘N’ No MICR data check records or image records (Type 2x’s, 3x’s, 5x’s) e.g., Account Totals only or an empty cash letter.
+'E' ECP - indicates Electronic Check Records with no image records.
+'F' Image to follow - indicates Electronic Check Records and image records for information that correspond to a previously sent Cash Letter (i.e., 'E' file)"/>
+    <field name="Cash Letter Documentation Type Indicator" start="44" end="44" type="A" comments="The only valid values are:
+‘C’ Image provided separately, no paper provided
+‘G’ Image included, no paper provided
+‘K’ No image provided, no paper provided
+‘L’ No image provided, no paper provided, image upon request
+‘Z’ Not Same Type – Documentation associated with each item in Cash
+Letter will be different. The Check Detail Record (Type 25) has to be
+interrogated for further information."/>
+    <field name="Cash Letter ID" start="45" end="52" type="AN" comments="Must be unique within a Cash Letter Business Date"/>
+    <field name="Originator Contact Name" start="53" end="66" type="ANS" comments="Company name assigned to the depository account"/>
+    <field name="Originator Contact Phone Number" start="67" end="76" type="N" comments="Phone number of the contact at the company that creates the cash letter"/>
+    <field name="Fed Work Type" start="77" end="77" type="AN" comments="Blanks"/>
+    <!--<field name="Returns Indicator" start="78" end="78" type="A" comments="Defined as the first byte of the user field in DSTU X9.37 - 2003
+The only valid values are:
+‘E (administrative),
+‘R’ (customer/monetary),
+‘ ‘ Blank for Forward Presentment"/>-->
+    <field name="User Field" start="78" end="79" type="ANS" comments="Blanks"/>
+    <field name="Reserved" start="80" end="80" type="B" comments="Blanks"/>
+  </record>
+  <record type="20" name="Bundle Header">
+    <field name="Collection Type Indicator" start="3" end="4" type="N" comments="Field value must be '12' or '90' -  Meaning a deposit; the transaction carries value; data are treated as final. Note - Field 2 in Record 10 and 20 must be identical."/>
+    <field name="Destination Routing Number" start="5" end="13" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit . Must be the same as the Destination Routing Number (Field 3) in the Cash Letter Header Record (Type 10)"/>
+    <field name="ECE Institution Routing Number" start="14" end="22" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit Must be the same as the values in the ECE Institution Routing Number (Field 4) in the Cash Letter Header Record (Type 10)."/>
+    <field name="Bundle Business Date" start="23" end="30" type="N" comments="Must be a valid date in YYYYMMDD format"/>
+    <field name="Bundle Creation Date" start="31" end="38" type="N" comments="Must be a valid date in YYYYMMDD format . Eastern time zone shall be used."/>
+    <field name="Bundle ID" start="39" end="48" type="AN" comments="Must be unique within a Cash Letter business date"/>
+    <field name="Bundle Sequence Number" start="49" end="52" type="NB" comments="Combination of Bundle ID (field 7) and Bundle Sequence Number (field 8) must be unique within the cash letter."/>
+    <field name="Cycle Number" start="53" end="54" type="N" comments="A number assigned by the creator. May denoted the day of the week or other internal reference."/>
+    <field name="Return Location Routing Number" start="55" end="63" type="N" comments="This field shall not be used. Returns location is identified in Addenda record ‘26’"/>
+    <field name="User Field" start="64" end="79" type="ANS" comments="Blanks"/>
+    <field name="Reserved" start="80" end="80" type="B" comments="Blanks"/>
+  </record>
+  <record type="25" name="Check Detail">
+    <field name="Auxiliary On-Us" start="3" end="17" type="NBSM" comments="Mandatory if present
+• On-Us symbols on the MICR line, shall not be included
+• Dashes must be retained"/>
+    <field name="External Processing Code" start="18" end="18" type="NS" comments="Mandatory if present on the MICR Line
+• The External Processing Code is position 44 of the MICR line. This field is
+located immediately to the left of the Routing Transit field.
+• The ONLY valid values are ‘0 – 9’ and ‘*’
+(The field type of ‘NS’ is a deviation from the DSTU X9.37- 2003 Standard and
+clarifies which character types can be used in interoperable image exchange)"/>
+    <field name="Payor Bank Routing Number" start="19" end="26" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. Shall represent the first 8 digits of the routing number."/>
+    <field name="Payor Bank Routing Number Check Digit" start="27" end="27" type="N" comments="Mandatory – shall be the routing number check digit. The combination of fields 4 and 5 must be a mod-checked routing number with a valid check digit. (The field type of ‘N’ is a deviation from the DSTU X9.37- 2003 Standard and clarifies which character types can be used in interoperable image exchange)"/>
+    <field name="On-Us" start="28" end="47" type="NBSM" comments="Mandatory if present on the MICR Line
+• The On-Us Field of the MICR document is located between positions 14 and
+32 of the MICR Line of the item.
+• On-Us symbols, as they appear within this field on the MICR line, must be
+represented with a forward slash(/).
+• Dashes must be retained"/>
+    <field name="Item Amount" start="48" end="57" type="N" comments="Dollar value of the Deposit - Must report the total value of all 25 Records in the cash letter."/>
+    <field name="ECE Institution Item Sequence Number" start="58" end="72" type="NB" comments="A number assinged by creator that uniquely identifies the item in the cash letter."/>
+    <field name="Documentation Type Indicator" start="73" end="73" type="AN" comments="The value will always be the same as the value in the Cash Letter Header Record(Type 10) Cash Letter Documentation Type Indicator(Field 8) unless that value is 'Z'.
+            The only valid values are:
+            'C' Image provided separately, no paper provided
+            'G' Image included, no paper provided
+            'K' No image provided, no paper provided
+            'L' No image provided, no image provided, image upon request"/>
+    <field name="Return Acceptance Indicator" start="74" end="74" type="AN" comments="Shall be present only under clearing arrangements"/>
+    <field name="MICR Valid Indicator" start="75" end="75" type="" comments="Blanks"/>
+    <field name="BOFD Indicator" start="76" end="76" type="" comments="Field value preferred to be 'U'. if a value of 'N' or 'Y' is sent, the indicator will be ignored and passed as received."/>
+    <field name="Check Detail Record Addendum Count" start="77" end="78" type="N" comments="The number of Check Detail Addenda. Value must represent sum of the number of Type 26, Type 27 and Type 28 records and must be > ‘0’ and match the number of addendum records included"/>
+    <field name="Correction Indicator" start="79" end="79" type="" comments="Blanks"/>
+    <field name="Archive Type Indicator" start="80" end="80" type="" comments="Blanks"/>
+  </record>
+  <record type="26" name="Check Detail Addendum A">
+    <field name="Record Number" start="3" end="3" type="N" comments="The Type ‘26’record with the highest number in this field shall indicate the current return location for this item"/>
+    <field name="BOFD Routing Number" start="4" end="12" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit. This Routing Number is specified by the ECE institution, indicating the location to which returns shall be sent. This is usually the Bank of First Deposit however it may be an institution other than the BOFD. This field shall be applied to this item and takes precedent over any value present in the Return Location Routing number (Field 10) in the Bundle Header Record (Type 20)."/>
+    <field name="BOFD Business (Endorsement) Date" start="13" end="20" type="N" comments="In the case of the original creation of a Forward Presentment Check Detail Addendum A Record (Type 26), the year, month and day of the depository institution endorsement shall be included. Must be a valid date in YYYYMMDD format - the endorsement that designates the business date of the BOFD. If this record is created as a result of receiving a Return Addendum A Record (Type 32) record, it shall include the date received in that record clause 15.4"/>
+    <field name="BOFD Item Sequence Number" start="21" end="35" type="NB" comments="If there is no Check Detail Addendum C Record (Type 28) the sequence number is Mandatory. In the case of no Record Type 28, the sequence number field type must be numeric. If you are creating an original 26 Record, field shall contain numeric data and shall not contain all blanks. If BOFD Item Sequence Number (Field 4) in the Return Addendum A Record (Type 32) was received electronically, that data shall be transferred to this field which may be all blanks."/>
+    <field name="Deposit Account Number at BOFD" start="36" end="73" type="" comments=""/>
+    <field name="BOFD Deposit Branch" start="36" end="73" type="" comments=""/>
+    <field name="Payee Name" start="36" end="73" type="" comments=""/>
+    <field name="Truncation Indicator" start="74" end="74" type="A" comments="'Y' indicates the BOFD Routing number (Field 3) is the truncator of the original check. (Institutions truncating a substitute check should not use a ‘Y”).
+N' indicates BOFD is not truncator of original check"/>
+    <field name="BOFD Conversion Indicator" start="75" end="78" type="" comments=""/>
+    <field name="BOFD Correction Indicator" start="75" end="78" type="" comments=""/>
+    <field name="User Field" start="79" end="79" type="ANS" comments="Defined as the second byte of the user field in DSTU X9.37 - 2003"/>
+    <field name="Reserved" start="80" end="80" type="B" comments=""/>
+  </record>
+  <record type="28" name="Check Detail Addendum C">
+    <field name="Record Number" start="3" end="4" type="N" comments=""/>
+    <field name="Endorsing Bank Routing Number" start="5" end="13" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit"/>
+    <field name="Endorsing Bank Endorsement Date" start="14" end="21" type="N" comments="Must be a valid date in YYYYMMDD format – designates the business date of the Endorsing Bank"/>
+    <field name="Endorsing Bank Item Sequence Number" start="22" end="36" type="NB" comments="Field must contain a numeric value. It can not be all blanks."/>
+    <field name="Truncation Indicator" start="37" end="37" type="A" comments="'Y' indicates this endorsing bank is the truncator of original check. (Institutions truncating a substitute check should not use a ‘Y”).
+'N' indicates this endorsing bank is not the truncator of original check"/>
+    <field name="Endorsing Bank Conversion Indicator" start="38" end="38" type="" comments=""/>
+    <field name="Endorsing Bank Correction Indicator" start="39" end="39" type="" comments=""/>
+    <field name="Return Reason" start="40" end="40" type="AN" comments="Spaces unless the item was returned and is being represented. If represented, the valid value will be the same as listed in the Return Record (Type 31) Return Reason (Field 6). Not all Check Detail Addendum C Records (Type 28) will have a return reason in this field. Refer to Section 2 – Table of Valid Return Reason Codes for Return Reason"/>
+    <field name="User Field" start="41" end="59" type="" comments="Field Position has been redefined (expanded) to align with Return Addendum D (Type 35)"/>
+    <field name="Endorsing Bank Identifier" start="60" end="60" type="N" comments="Defined as a Reserved Field in DSTU X9.37 – 2003 A code used to identify the bank’s role in the collection process. The only valid values are:
+‘0’ Depository Bank (BOFD) this value shall only be used when the Check Detail Addendum A Record (Type 26) reflects the Return Processing Bank in lieu of BOFD
+‘1’ Other Collecting Bank
+‘2’ Other Returning Bank
+‘3’ Payor Bank"/>
+    <field name="Reserved" start="61" end="80" type="B" comments=""/>
+  </record>
+  <record type="50" name="Image View Detail">
+    <field name="Image Indicator" start="3" end="3" type="N" comments="The only valid values are:
+'0 indicates image view not present. Must adhere to Annex E
+'1' indicates Image view is check or substitute check"/>
+    <field name="Image Creator Routing Number" start="4" end="12" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit"/>
+    <field name="Image Creator Date" start="13" end="20" type="N" comments="YYYYMMDD indicates date the image was created"/>
+    <field name="Image View Format Indicator" start="21" end="22" type="N" comments="Primary views shall only have a value of ‘00’ Shall only be present when the Image Indicator (Field 2) is not equal to ‘0’. This is a deviation from the DSTU X9.37 Standard.
+• (This clarifies an error in the DSTU X9.37-2003 Standard)"/>
+    <field name="Image View Compression Algorithm Identifier" start="23" end="24" type="" comments="Primary views shall only have a value of ‘00’ Shall only be present when the Image Indicator (Field 2) is not equal to ‘0’. This is a deviation from the DSTU X9.37 Standard.
+• (This clarifies an error in the DSTU X9.37-2003 Standard)."/>
+    <field name="Image View Data Size" start="25" end="31" type="N" comments="Field is ignored. Image View Data size shall be obtained from Image View Data Record (Type 52) Length of Image Data (Field 18)."/>
+    <field name="View Side Indicator" start="32" end="32" type="N" comments="The only valid values are:
+'0' Front Image View
+'1' Rear Image View"/>
+    <field name="View Descriptor" start="33" end="34" type="N" comments="The only valid value for primary views is:
+'00' Full View"/>
+    <field name="Digital Signature Indicator" start="35" end="35" type="NB" comments="Field value must be 0 - Meaning digital signature is not present."/>
+    <field name="Digital Signature Method" start="36" end="37" type="AB" comments="Blank"/>
+    <field name="Security key Size" start="38" end="42" type="AB" comments="Blank"/>
+    <field name="Start of Protected Data" start="43" end="49" type="AB" comments="Blank"/>
+    <field name="Length of Protected Data" start="50" end="56" type="AB" comments="Blank"/>
+    <field name="Image Recreate Indicator" start="57" end="57" type="AB" comments="Blank"/>
+    <field name="User Field" start="58" end="65" type="AB" comments="Blank"/>
+    <!--<field name="Image TIFF Variance Indicator" start="66" end="66" type="AN" comments="Defined as a Reserved Field in DSTU X9.37 – 2003
+The only valid values:
+‘ ‘ Blank, Image variance unknown
+‘0’ No variance
+‘1’ Photometric Interpretation (Tag 262)
+‘2’ Multi-strip Item (Tag 273, 278, and 279)
+‘3’ Fill Order (Tag 266)
+‘4’ Orientation (Tag 274)
+‘5’ Photometric Interpretation &amp; Multi-strip Item (Tag 262, 273, 278, and 279)
+‘6’ Photometric Interpretation &amp; Fill Order (Tag 262, and 266)
+‘7’ Photometric Interpretation &amp; Orientation (Tag 262, and 274)
+‘8’ Multi-strip Item &amp; Fill Order (Tag 266, 273, 278, and 279)
+‘9’ Multi-strip Item &amp; Orientation (Tag 272, 274, 278, and 279)
+‘A’ Fill Order &amp; Orientation ( Tag 266, and 274)
+‘B’ Photometric Interpretation, Multi-strip Item &amp; Fill Order (Tag 262, 266, 273, 278, and 279)
+‘C’ Photometric Interpretation, Multi-strip Item &amp; Orientation (Tag 262, 273, 274, 278, and 279)
+‘D’ Photometric Interpretation, Fill Order &amp; Orientation (Tag 262, 266, and 274)
+‘E’ Multi-strip Item, Fill Order &amp; Orientation (Tag 266, 273, 274, 278, and 279)
+‘F’ Photometric Interpretation, Multi-strip Item, Fill Order &amp; Orientation (Tag 262, 266, 273, 274, 278, and 279)"/>
+    <field name="Override Indicator" start="67" end="67" type="AN" comments="Defined as a Reserved Field in DSTU X9.37 – 2003
+An indicator to communicate to a receiving exchange partner that this image view has a detected image test failure that cannot be corrected and that this view shall be accepted regardless of any image test failures. Alternative options to using this view may also be indicated
+‘Blank/Space’ indicates no observed image test failure present
+‘0’ No override information for this view or not applicable
+‘A’ IQA Fail – Image view reviewed and deemed usable – no alternate format
+‘B’ IQA Fail – Image view reviewed and deemed usable – alternate format included in this file
+‘C’ IQA Fail – Image view reviewed and deemed usable – alternate format included in this file and original document available
+‘D’ IQA Fail – Image view reviewed and deemed usable – alternate format available
+‘E’ IQA Fail – Image view reviewed and deemed usable – original document available
+‘F’ IQA Fail – Image view reviewed and deemed usable – original document and alternate format available
+‘G’ IQA Fail – Image view reviewed and deemed unusable – no alternate format
+‘H’ IQA Fail – Image view reviewed and deemed unusable – alternate format included in this file
+‘I’ IQA Fail – Image view reviewed and deemed unusable – alternate format included in this file and original document available
+‘J’ IQA Fail – Image view reviewed and deemed unusable – alternate format available
+‘K’ IQA Fail – Image view reviewed and deemed unusable – original document available
+‘L’ IQA Fail – Image view reviewed and deemed unusable – original document and alternate format available
+‘M’ IQA Fail – Image view not reviewed – no alternate format
+‘N’ IQA Fail - Image view not reviewed – alternate format included in this file
+‘O’ IQA Fail - Image view not reviewed – alternate format included in this file and original document available
+‘P’ IQA Fail - Image view not reviewed – alternate format available
+‘Q’ IQA Fail - Image view not reviewed – original document available
+‘R’ IQA Fail - Image view not reviewed – original document and alternate format available"/>-->
+    <field name="Reserved" start="66" end="80" type="B" comments="Blanks"/>
+  </record>
+  <record type="52" name="Image View Data">
+    <field name="ECE Institution Routing Number" start="3" end="11" type="N" comments="Must be a valid routing and transit number issued by the ABA’s Routing Number Registrar. The routing number shall be mod-checked with a valid check digit. Must be the same as ECE Institution Routing number in the Bundle Header Record (Type 20)."/>
+    <field name="Bundle Business Date" start="12" end="19" type="N" comments="Must be a valid date in YYYYMMDD format"/>
+    <field name="Cycle Number" start="20" end="21" type="AN" comments="A code assigned by creator. May denote the day of the week or other internal reference number."></field>
+    <field name="ECE Institution Item Sequence Number" start="22" end="36" type="NB" comments="A number assigned by creator that uniquely identifies each Check Detail Record (Type 25) in the cash letter."/>
+    <field name="Security Originator Name" start="37" end="52" type="AB" comments="Blanks"/>
+    <field name="Security Authenticator Name" start="52" end="68" type="AB" comments="Blanks"/>
+    <field name="Security Key Name" start="69" end="84" type="AB" comments="Blanks"/>
+    <field name="Clipping Origin" start="85" end="85" type="NB" comments="’0’ indicates Full View. Primary front and rear views shall only have a value of ‘0’. '0'- Meaning clipping information is not present." />
+    <field name="Clipping Coordinate h1" start="86" end="89" type="AB" comments="Blanks"/>
+    <field name="Clipping Coordinate h2" start="90" end="93" type="B" comments="Blanks"/>
+    <field name="Clipping Coordinate v1" start="94" end="97" type="B" comments="Blanks"/>
+    <field name="Clipping Coordinate v2" start="98" end="101" type="B" comments="Blanks"/>
+    <field name="Length of Image Reference Key" start="102" end="105" type="N" comments="'0' indicates Image Reference Key (Field 15) is not present"/>
+    <field name="Length of Digital Signature" start="106" end="110" type="B" comments="Field must be 0 - Meaning digital signature is not present"/>
+    <field name="Length of Image Data" start="111" end="117" type="NB" comments="Total number of bytes in the Image data in this Image view data record"/>
+  </record>
+  <record type="61" name="Credit Record">
+    <field name="Record Usage Indicator" start="3" end="3" type="AN" comments="Field value must be '2' - Meaning it represents the deposit slip."/>
+    <field name="Auxiliary On-Us" start="4" end="18" type="NBMcd" comments="Value from the Aux OnUs field of the Deposity slip, if present"/>
+    <field name="External Processing Code (EPC)" start="19" end="19" type="ANS" comments="Blank"/>
+    <field name="Posting Account Routing Number" start="20" end="28" type="NBMcd" comments="Value in the Transit Routing Number of the Deposit Account"/>
+    <field name="Posting Account Bank On-Us" start="29" end="48" type="NBMcd" comments="Value in the Bank On-Us field of the Deposit Account"/>
+    <field name="Item Amount" start="49" end="58" type="N" comments="Dollar value of the Deposit - Must report the total value of all 25 Records in the cash letter/Bundel."/>
+    <field name="ECE Institution Item Sequence Number" start="59" end="73" type="NB" comments="A number assigned by you that uniquely identifies the item in the Cash Letter"/>
+    <field name="Documentation Type Indicator" start="74" end="74" type="AN" comments="Field value must be 'G' - Meaning there are 2 images present. These images may be computer generated if it meets all BAC image format specifications."/>
+    <field name="Type of Account Code" start="75" end="75" type="N" comments="Field value must be '0'"/>
+    <field name="Source of Work" start="76" end="77" type="N" comments="Field must be '2' space or '02' - Meaning internal branch"/>
+    <field name="Reserved" start="78" end="80" type="AB" comments="Blanks"/>
+  </record>
+  <record type="70" name="Bundle Control">
+    <field name="Items Within Bundle Count" start="3" end="6" type="N" comments="Total number of items sent within the bundle (all Check Detail Records - Type 25)"/>
+    <field name="Bundle Total Amount" start="7" end="18" type="N" comments="Total US dollar value of the items within the bundle NOTE: Maximum cash letter amount is $99,999,999.99"/>
+    <field name="MICR Valid Total Amount" start="19" end="30" type="N" comments="Total US dollar value of the items within the bundle NOTE: Maximum cash letter amount is $99,999,999.99"/>
+    <field name="Images within Bundle Count" start="31" end="35" type="N" comments="Total number of image views within a bundle. It is expected that there is a front and back image for each item(therefore, should be 2X the number of items in the bundle)"/>
+    <field name="User Field" start="36" end="55" type="AB" comments="Blanks"/>
+    <field name="Reserved" start="56" end="80" type="AB" comments="Blanks"/>
+  </record>
+  <record type="90" name="Cash Letter Control">
+    <field name="Bundle Count" start="3" end="8" type="N" comments="Total number of bundles within the Cash letter"/>
+    <field name="Items Within Cash letter Count" start="9" end="16" type="N" comments="Total number of items sent within the cash letter (all check Detail Records - Type 25)"/>
+    <field name="Cash Letter Total Amount" start="17" end="30" type="N" comments="Total US dollar value of the cash letter. NOTE: Maximum cash letter amount is  $99,999,999.99"/>
+    <field name="Images Within Cash Letter Count" start="31" end="39" type="N" comments="Total number of image views within a cash letter.It is expected that there is a front and back image for each item (therefore,2X the number of items in the bundle)"/>
+    <field name="Originator Contact Name" start="40" end="57" type="N" comments="Must match the field 11 of the Cash Letter Header Record (Type 10)"/>
+    <field name="Settlement Date" start="58" end="65" type="AB" comments="Blanks"/>
+    <field name="Reserved" start="66" end="80" type="AB" comments="Blanks"/>
+  </record>
+  <record type="99" name="File Control">
+    <field name="Cash Letter Count" start="3" end="8" type="N" comments="Total number of cash letters within the file"/>
+    <field name="Total Record Count" start="9" end="16" type="N" comments="Total number of records of all types sent in the file, including the File Control Record"/>
+    <field name="Total Item Count" start="17" end="24" type="N" comments="Total number of items sent within the file(all Check Detail Records - Type 25)"/>
+    <field name="File Total Amount" start="25" end="40" type="N" comments="Total US dollar value of the complete file(all Check Detail Records - Type 25)"/>
+    <field name="Immediate Origin Contact Name" start="41" end="54" type="N" comments="Blanks"/>
+    <field name="Immediate Origin Contact Phone Number" start="55" end="64" type="N" comments="Blanks"/>
+    <field name="Reserved" start="65" end="80" type="N" comments="Blanks"/>
+  </record>
+</records>
