@@ -1,4 +1,4 @@
-using System;
+using System.Linq;
 using Xunit;
 
 namespace x937.Tests
@@ -89,7 +89,7 @@ namespace x937.Tests
         }
 
         [Fact]
-        public void TestThatTreeBranch_HasChildren()
+        public void TestThatTreeBranch_FindsAllMatchingChildren()
         {
             // Arrange
             var test0 = new Test {Id = 0, Value = "Zero"};
@@ -104,6 +104,45 @@ namespace x937.Tests
 
             // Assert
             Assert.Equal(2, found.Count);
+        }
+
+        [Fact]
+        public void TestThatTreeBranch_HasChildren()
+        {
+            // Arrange
+            var test0 = new Test {Id = 0, Value = "Zero"};
+            var test1 = new Test {Id = 1, Value = "One"};
+            var test2 = new Test {Id = 2, Value = "Two"};
+
+            // Act
+            var root = new TreeNode<Test>(test0);
+            var branch = root.AddChild(test1);
+            branch.AddChild(test2);
+
+            // Assert
+            Assert.Equal(1, branch.Children.Count);
+        }
+
+        [Fact]
+        public void TestThatTreeBranch_CanAddAdditionalNodes()
+        {
+            // Arrange
+            var test0 = new Test {Id = 0, Value = "Zero"};
+            var test1 = new Test {Id = 1, Value = "One"};
+            var test2 = new Test {Id = 2, Value = "Two"};
+
+            // Act
+            var root = new TreeNode<Test>(test0);
+            var branch = root.AddChild(test1);
+            branch.AddChild(test2);
+
+            // I didn't capture the object for the branch, but I don't need to
+            var found = branch.FindTreeNode(x => x.Data.Id == 2);
+            found.AddChild(test2);
+            found.AddChild(test2);
+
+            // Assert
+            Assert.Equal(5, root.Count());
         }
     }
 

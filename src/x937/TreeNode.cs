@@ -9,7 +9,7 @@ namespace x937
     {
         public T Data { get; set; }
         public TreeNode<T> Parent { get; set; }
-        public ICollection<TreeNode<T>> Children { get; set; }
+        public ICollection<TreeNode<T>> Children { get; }
 
         public bool IsRoot => Parent == null;
 
@@ -51,7 +51,7 @@ namespace x937
 
         #region searching
 
-        private ICollection<TreeNode<T>> ElementsIndex { get; set; }
+        private ICollection<TreeNode<T>> ElementsIndex { get; }
 
         private void RegisterChildForSearch(TreeNode<T> node)
         {
