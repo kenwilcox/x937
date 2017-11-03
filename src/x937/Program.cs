@@ -402,7 +402,7 @@ namespace x937
                 //pbFront.Image = fImg;
                 //fImg.Dump($"Front: {index}");
                 //fImg.Save($@"C:\temp\x937\{index}-front.tiff");
-                var fname = $@"C:\temp\x937-images\{index}-{(_prev50 == "0" ? "front" : "back")}.out";
+                var fname = $@"C:\temp\x937-images\{index}-{(_prev50 == "0" ? "front" : "back")}.tiff";
                 File.WriteAllBytes(fname, recB);
                 //var img = Image.FromFile(fname);
                 //img.Dump();

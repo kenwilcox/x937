@@ -2,10 +2,12 @@
 {
     public class X9Rec
     {
-        //public X9Rec()
-        //{
-
-        //}
+        public X9Rec()
+        {
+            RecType = string.Empty;
+            RecData = string.Empty;
+            RecImage = string.Empty;
+        }
 
         public X9Rec(string recType, string recData, string recImage)
         {
