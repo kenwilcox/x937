@@ -32,7 +32,11 @@ namespace x937
             Data = data;
             Children = new LinkedList<TreeNode<T>>();
             // Don't try to simplify object initializer, it breaks the code
+            // Yes, all the crap below is to turn it all off
+#pragma warning disable IDE0028 // Simplify collection initialization
+            // ReSharper disable once UseObjectOrCollectionInitializer
             ElementsIndex = new LinkedList<TreeNode<T>>();
+#pragma warning restore IDE0028 // Simplify collection initialization
             ElementsIndex.Add(this);
         }
 
