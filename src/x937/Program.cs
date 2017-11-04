@@ -12,7 +12,8 @@ namespace x937
         {
             Debug.WriteLine(args.Length);
             var pgm = new Program();
-            pgm.ShowX9File(@"C:\Users\wilcoxk\Downloads\MTS_ICLViewer\Sample ICL File\101Bank Of America20130218.ICL");
+            //pgm.ShowX9File(@"C:\Users\wilcoxk\Downloads\MTS_ICLViewer\Sample ICL File\101Bank Of America20130218.ICL");
+            pgm.ShowX9File(@"101Bank Of America20130218.ICL");
         }
 
         public delegate void OnSummary(string recordType, string recData);
@@ -344,7 +345,8 @@ namespace x937
             // GAAAH! Open up two additional Reader objects for use later?
             _checkImageFs = new FileStream(x9File, FileMode.Open, FileAccess.Read, FileShare.Read);
             _checkImageBr = new BinaryReader(_checkImageFs);
-            Directory.CreateDirectory(@"C:\temp\x937-images\");
+            var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"x937-images");
+            Directory.CreateDirectory(directory);
             foreach (var node in _tvx9)
             {
                 var indent = Utils.CreateIndent(node.Level+1);
@@ -353,7 +355,7 @@ namespace x937
                 //var data = x9Stuff[index];
                 //Console.WriteLine($"{indent}{node.Data} -- {data.recData}{(data.recImage.Length > 0 ? " -- Image@" : "")}{data.recImage}");//indent + (node.Data + ?? "null"));
                 Console.WriteLine($"{indent}{node.Data}");
-                DumpRecordData(index, indent);
+                DumpRecordData(index, indent, directory);
             }
 
             //x9Stuff.Dump();
@@ -367,7 +369,7 @@ namespace x937
 
         string _prev50 = "";
 
-        void DumpRecordData(int index, string indent)
+        void DumpRecordData(int index, string indent, string directory)
         {
             var rec = X9Stuff[index];
             if (!int.TryParse(rec.RecType, out int iRecType)) return;
@@ -402,7 +404,8 @@ namespace x937
                 //pbFront.Image = fImg;
                 //fImg.Dump($"Front: {index}");
                 //fImg.Save($@"C:\temp\x937\{index}-front.tiff");
-                var fname = $@"C:\temp\x937-images\{index}-{(_prev50 == "0" ? "front" : "back")}.tiff";
+                var fname = $@"{index}-{(_prev50 == "0" ? "front" : "back")}.tiff";
+                fname = Path.Combine(directory, fname);
                 File.WriteAllBytes(fname, recB);
                 //var img = Image.FromFile(fname);
                 //img.Dump();
