@@ -6,13 +6,13 @@ namespace x937
 {
     public class Summary
     {
-        private static ICLFileSummary _objFileSummary;
-        private static ICLCashLetterSummary _objCashLetterSummary;
-        private static ICLCreditSummary _objCreditSummary;
+        private ICLFileSummary _objFileSummary;
+        private ICLCashLetterSummary _objCashLetterSummary;
+        private ICLCreditSummary _objCreditSummary;
 
-        private static ICLFileDetail _ifd;
-        private static ICLCashLetterDetail _icld;
-        private static ICLCreditDetail _icrd;
+        private ICLFileDetail _ifd;
+        private ICLCashLetterDetail _icld;
+        private ICLCreditDetail _icrd;
 
         public Summary()
         {
@@ -30,7 +30,7 @@ namespace x937
         //    _objCreditSummary = new ICLCreditSummary();
         //}
 
-        public void SetObjects()
+        private void SetObjects()
         {
             //Debug.WriteLine("SetObjects");
             _ifd = _ifd ?? new ICLFileDetail();
@@ -56,7 +56,18 @@ namespace x937
             }
         }
 
-        public void FileSummary(string recType, string recData)
+        public void SetSummaryData(string recType, string recData)
+        {
+            if (recType == "01" || recType == "99") FileSummary(recType, recData);
+            else if (recType == "10" || recType == "90") CashLetterSummary(recType, recData);
+            else if (recType == "20" || recType == "70") BundleSummary(recType, recData);
+            else if (recType == "61") CreditSummary(recType, recData);
+            //else if (recType == "50" || recType == "52") {} // Check detail, not summary?
+            //else throw new Exception($"Unknown {nameof(recType)} - {recType}");
+            else Console.WriteLine($"Do we care about {recType}?");
+        }
+
+        private void FileSummary(string recType, string recData)
         {
             if (recType == "01")
             {
@@ -65,54 +76,48 @@ namespace x937
                 _ifd.FileCreationTime = recData.Substring(31, 4);
 
             }
-            if (recType == "99")
+            else if (recType == "99")
             {
                 _ifd.TotalFileAmount = Convert.ToInt64(recData.Substring(24, 16));
                 _ifd.TotalNumberofRecords = Convert.ToInt32(recData.Substring(8, 8));
             }
         }
 
-        public void CashLetterSummary(string recType, string recData)
+        private void CashLetterSummary(string recType, string recData)
         {
-            if (recType == "10" || recType == "90")
+            if (recType != "10" && recType != "90") return;
+            if (recType == "10")
             {
-                if (recType == "10")
-                {
-                    _icld.CashLetterPosition = Convert.ToInt32(recData.Substring(44, 8));
-                }
-                if (recType == "90")
-                {
-                    _icld.CashLetterAmount = Convert.ToInt64(recData.Substring(16, 14));
-                    CashLetterEnd();
-                }
+                _icld.CashLetterPosition = Convert.ToInt32(recData.Substring(44, 8));
+            }
+            else if (recType == "90")
+            {
+                _icld.CashLetterAmount = Convert.ToInt64(recData.Substring(16, 14));
+                CashLetterEnd();
             }
         }
 
-        public void BundleSummary(string recType, string recData)
+        private void BundleSummary(string recType, string recData)
         {
-            if (recType == "20" || recType == "70")
+            //if (recType != "20" && recType != "70") return;
+            //if (recType == "20")
+            //{
+            //}
+            if (recType == "70")
             {
-                if (recType == "20")
-                {
-                }
-                if (recType == "70")
-                {
-                    BundleEnd();
-                }
+                BundleEnd();
             }
         }
 
-        public void CreditSummary(string recType, string recData)
+        private void CreditSummary(string recType, string recData)
         {
-            if (recType == "61")
-            {
-                _icrd.CreditAmount = Convert.ToInt64(recData.Substring(48, 10));
-                _icrd.PostingAccRT = recData.Substring(19, 9);
-                _icrd.PostingAccBankOnUs = recData.Substring(28, 20);
-            }
+            if (recType != "61") return;
+            _icrd.CreditAmount = Convert.ToInt64(recData.Substring(48, 10));
+            _icrd.PostingAccRT = recData.Substring(19, 9);
+            _icrd.PostingAccBankOnUs = recData.Substring(28, 20);
         }
 
-        public void CreateNodeValues()
+        public TreeNode<string> CreateNodeValues()
         {
             Debug.WriteLine("CreateNodeValues");
             Console.WriteLine("**SUMMARY**");
@@ -126,17 +131,20 @@ namespace x937
             {
                 cl.AddChild("Cash Letter " + icd.CashLetterPosition + " Amount ($) - " + icd.CashLetterAmount);
             }
-            if (_objCreditSummary != null && _objCreditSummary.Count > 0)
+            if (_objCreditSummary == null || _objCreditSummary.Count <= 0) return tvSum;
+            cl.AddChild("Total No of Credit Records - " + _objCreditSummary.Count);
+            var credit = tvSum.AddChild("Total Credit Amount ($) - " + _objCreditSummary.TotalCreditRecordAmount);
+            foreach (ICLCreditDetail crd in _objCreditSummary)
             {
-                cl.AddChild("Total No of Credit Records - " + _objCreditSummary.Count);
-                var credit = tvSum.AddChild("Total Credit Amount ($) - " + _objCreditSummary.TotalCreditRecordAmount);
-                foreach (ICLCreditDetail crd in _objCreditSummary)
-                {
-                    credit.AddChild($"Posting Bank On-Us {crd.PostingAccBankOnUs.Trim()} Amount ($)- {crd.CreditAmount}");
-                }
+                credit.AddChild($"Posting Bank On-Us {crd.PostingAccBankOnUs.Trim()} Amount ($)- {crd.CreditAmount}");
             }
 
-            foreach (var node in tvSum)
+            return tvSum;
+        }
+
+        public static void Dump(TreeNode<string> nodes)
+        {
+            foreach (var node in nodes)
             {
                 var indent = Utils.CreateIndent(node.Level+1);
                 Console.WriteLine($"{indent}{node.Data}");

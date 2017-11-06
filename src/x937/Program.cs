@@ -12,20 +12,15 @@ namespace x937
         {
             Debug.WriteLine(args.Length);
             var pgm = new Program();
-            var records = pgm.ShowX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL"));
+            var records = pgm.ParseX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL"));
+            var summary = GetSummary(records);
+            var sum = summary.CreateNodeValues();
+            Summary.Dump(sum);
             WriteX9File(records, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218-new.ICL"));
         }
 
-        public delegate void OnSummary(string recordType, string recData);
-
         public readonly XmlDocument XmlFields = new XmlDocument();
         private static TreeNode<string> _tvx9;
-        private static OnSummary _onFileSummary;
-        private static OnSummary _onCashLetterSummary;
-        private static OnSummary _onCreditSummary;
-        private static OnSummary _onBundleSummary;
-
-        private static readonly Summary ObjSumary = new Summary();
         private FileStream _checkImageFs;
         private BinaryReader _checkImageBr;
 
@@ -59,15 +54,20 @@ namespace x937
             fs.Close();
         }
 
-        public X9Recs ShowX9File(string x9File)
+        public static Summary GetSummary(X9Recs records)
+        {
+            var summary = new Summary();
+            foreach(X9Rec item in records)
+            {
+                summary.SetSummaryData(item.RecType, item.RecData);
+            }
+            return summary;
+        }
+
+        public X9Recs ParseX9File(string x9File)
         {
             XmlFields.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"X9Fields.xml"));
             var ret = new X9Recs();
-
-            _onFileSummary += ObjSumary.FileSummary;
-            _onCashLetterSummary += ObjSumary.CashLetterSummary;
-            _onCreditSummary += ObjSumary.CreditSummary;
-            _onBundleSummary += ObjSumary.BundleSummary;
 
             // open x9.37 file from bank
             FileStream fs = new FileStream(x9File, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -136,7 +136,7 @@ namespace x937
                     case "01": // File Header record
                         fileStarted = true;
                         _tvx9.Data = "Header (01):" + ret.Add(new X9Rec("01", rec, ""));
-                        _onFileSummary(rec.Substring(0, 2), rec);
+                        //_onFileSummary(rec.Substring(0, 2), rec);
                         break;
                     case "10": // cash file header
                         if (fileStarted)
@@ -158,7 +158,7 @@ namespace x937
                                 clStarted = true;
                             }
                             clNode = _tvx9.AddChild("Cash Letter Header (10):" + ret.Add(new X9Rec("10", rec, "")));
-                            _onCashLetterSummary(rec.Substring(0, 2), rec);
+                            //_onCashLetterSummary(rec.Substring(0, 2), rec);
                         }
                         else
                         {
@@ -201,7 +201,7 @@ namespace x937
                             return new X9Recs();
                         }
                         bundleNode = clNode.AddChild("Bundle Header (20):" + ret.Add(new X9Rec("20", rec, "")));
-                        _onBundleSummary(rec.Substring(0, 2), rec);
+                        //_onBundleSummary(rec.Substring(0, 2), rec);
                         break;
                     case "25": // check detail record
                         if (bundleStarted && !bundleEnded)
@@ -332,7 +332,7 @@ namespace x937
                         {
                             checkNode = bundleNode.AddChild("Credit/Reconcilation Record (61):" + ret.Add(new X9Rec("61", rec, "")));
                             checkStarted = true;
-                            _onCreditSummary(rec.Substring(0, 2), rec);
+                            //_onCreditSummary(rec.Substring(0, 2), rec);
                             checkBack50 = false;
                             checkBack52 = false;
                             checkFront50 = false;
@@ -342,17 +342,17 @@ namespace x937
                     case "70":
                         bundleEnded = true;
                         bundleNode.AddChild("Bundle Control (70):" + ret.Add(new X9Rec("70", rec, "")));
-                        _onBundleSummary(rec.Substring(0, 2), rec);
+                        //_onBundleSummary(rec.Substring(0, 2), rec);
                         break;
                     case "90":
                         clEnded = true;
                         clNode.AddChild("Cash Letter Control (90):" + ret.Add(new X9Rec("90", rec, "")));
-                        _onCashLetterSummary(rec.Substring(0, 2), rec);
+                        //_onCashLetterSummary(rec.Substring(0, 2), rec);
                         break;
                     case "99":
                         fileEnded = true;
                         _tvx9.AddChild("File Control (99):" + ret.Add(new X9Rec("99", rec, "")));
-                        _onFileSummary(rec.Substring(0, 2), rec);
+                        //_onFileSummary(rec.Substring(0, 2), rec);
                         break;
                 }
                 reclenB = br.ReadBytes(4);
@@ -392,7 +392,7 @@ namespace x937
             {
                 Console.WriteLine($"{item.RecData}");
             }
-            ObjSumary.CreateNodeValues();
+            //ObjSumary.CreateNodeValues();
 
             return ret;
         }
