@@ -14,8 +14,7 @@ namespace x937
             var pgm = new Program();
             var records = pgm.ParseX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL"));
             var summary = GetSummary(records);
-            var sum = summary.CreateNodeValues();
-            Summary.Dump(sum);
+            Summary.Dump(summary.CreateNodeValues());
             WriteX9File(records, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218-new.ICL"));
         }
 

@@ -6,33 +6,17 @@ namespace x937
 {
     public class Summary
     {
-        private ICLFileSummary _objFileSummary;
-        private ICLCashLetterSummary _objCashLetterSummary;
-        private ICLCreditSummary _objCreditSummary;
+        private readonly ICLFileSummary _objFileSummary;
+        private readonly ICLCashLetterSummary _objCashLetterSummary;
+        private readonly ICLCreditSummary _objCreditSummary;
 
-        private ICLFileDetail _ifd;
+        private readonly ICLFileDetail _ifd;
         private ICLCashLetterDetail _icld;
         private ICLCreditDetail _icrd;
 
         public Summary()
         {
-            SetObjects();
-        }
-
-        //public void SetObjectsNewForm()
-        //{
-        //    //Debug.WriteLine("SetObjectsNewForm");
-        //    _ifd = new ICLFileDetail();
-        //    _icld = new ICLCashLetterDetail();
-        //    _icrd = new ICLCreditDetail();
-        //    _objFileSummary = new ICLFileSummary();
-        //    _objCashLetterSummary = new ICLCashLetterSummary();
-        //    _objCreditSummary = new ICLCreditSummary();
-        //}
-
-        private void SetObjects()
-        {
-            //Debug.WriteLine("SetObjects");
+            // Since all the objects are internal now, not static, I don't need to null coalesce them
             _ifd = _ifd ?? new ICLFileDetail();
             _icld = _icld ?? new ICLCashLetterDetail();
             _icrd = _icrd ?? new ICLCreditDetail();
@@ -49,72 +33,51 @@ namespace x937
 
         private void BundleEnd()
         {
-            if (_icrd != null && _icrd.CreditAmount > 0)
-            {
-                _objCreditSummary.Add(_icrd);
-                _icrd = new ICLCreditDetail();
-            }
+            if (_icrd == null || _icrd.CreditAmount <= 0) return;
+            _objCreditSummary.Add(_icrd);
+            _icrd = new ICLCreditDetail();
         }
 
         public void SetSummaryData(string recType, string recData)
         {
-            if (recType == "01" || recType == "99") FileSummary(recType, recData);
-            else if (recType == "10" || recType == "90") CashLetterSummary(recType, recData);
-            else if (recType == "20" || recType == "70") BundleSummary(recType, recData);
-            else if (recType == "61") CreditSummary(recType, recData);
-            //else if (recType == "50" || recType == "52") {} // Check detail, not summary?
-            //else throw new Exception($"Unknown {nameof(recType)} - {recType}");
-            else Console.WriteLine($"Do we care about {recType}?");
-        }
-
-        private void FileSummary(string recType, string recData)
-        {
-            if (recType == "01")
+            switch (recType)
             {
-                _ifd.BankName = recData.Substring(36, 18);
-                _ifd.FileCreationDate = recData.Substring(23, 8);
-                _ifd.FileCreationTime = recData.Substring(31, 4);
+                // File Summary
+                case "01":
+                    _ifd.BankName = recData.Substring(36, 18);
+                    _ifd.FileCreationDate = recData.Substring(23, 8);
+                    _ifd.FileCreationTime = recData.Substring(31, 4);
+                    break;
+                case "99":
+                    _ifd.TotalFileAmount = Convert.ToInt64(recData.Substring(24, 16));
+                    _ifd.TotalNumberofRecords = Convert.ToInt32(recData.Substring(8, 8));
+                    break;
 
-            }
-            else if (recType == "99")
-            {
-                _ifd.TotalFileAmount = Convert.ToInt64(recData.Substring(24, 16));
-                _ifd.TotalNumberofRecords = Convert.ToInt32(recData.Substring(8, 8));
-            }
-        }
+                // Cash Letter Summary
+                case "10":
+                    _icld.CashLetterPosition = Convert.ToInt32(recData.Substring(44, 8));
+                    break;
+                case "90":
+                    _icld.CashLetterAmount = Convert.ToInt64(recData.Substring(16, 14));
+                    CashLetterEnd();
+                    break;
 
-        private void CashLetterSummary(string recType, string recData)
-        {
-            if (recType != "10" && recType != "90") return;
-            if (recType == "10")
-            {
-                _icld.CashLetterPosition = Convert.ToInt32(recData.Substring(44, 8));
-            }
-            else if (recType == "90")
-            {
-                _icld.CashLetterAmount = Convert.ToInt64(recData.Substring(16, 14));
-                CashLetterEnd();
-            }
-        }
+                // Bundle Summary
+                case "20": break;
+                case "70":
+                    BundleEnd();
+                    break;
 
-        private void BundleSummary(string recType, string recData)
-        {
-            //if (recType != "20" && recType != "70") return;
-            //if (recType == "20")
-            //{
-            //}
-            if (recType == "70")
-            {
-                BundleEnd();
+                // Credit Summary
+                case "61":
+                    _icrd.CreditAmount = Convert.ToInt64(recData.Substring(48, 10));
+                    _icrd.PostingAccRT = recData.Substring(19, 9);
+                    _icrd.PostingAccBankOnUs = recData.Substring(28, 20);
+                    break;
+                //default:
+                //    Debug.WriteLine($"Do we care about {recType}?");
+                //    break;
             }
-        }
-
-        private void CreditSummary(string recType, string recData)
-        {
-            if (recType != "61") return;
-            _icrd.CreditAmount = Convert.ToInt64(recData.Substring(48, 10));
-            _icrd.PostingAccRT = recData.Substring(19, 9);
-            _icrd.PostingAccBankOnUs = recData.Substring(28, 20);
         }
 
         public TreeNode<string> CreateNodeValues()
