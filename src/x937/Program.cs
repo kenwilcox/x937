@@ -38,32 +38,21 @@ namespace x937
             var bw = new BinaryWriter(fs,Encoding.ASCII);//Encoding.GetEncoding(37));
             foreach (X9Rec item in X9Stuff)
             {
-                if (item.RecType != "52")
+                var data = new byte[0];
+                if (File.Exists(item.FilePath))
                 {
-                    // Get the size,
-                    var recLen = item.RecData.Length;
-                    // Flip the bits
-                    var size = BitConverter.GetBytes(recLen);
-                    Array.Reverse(size);
-                    // Write the size in Big Endian not EBCDIC
-                    bw.Write(size);
-                    // Write the data in ASCII
-                    // This has to be converted to a char array, .net will add the size (pascal string) if it's just a string
-                    bw.Write(item.RecData.ToCharArray());
+                    data = File.ReadAllBytes(item.FilePath);
                 }
-                else
-                {
-                    var data = File.ReadAllBytes(item.FilePath);
-                    var recLen = data.Length + item.RecData.Length;
-                    // Flip the bits
-                    var size = BitConverter.GetBytes(recLen);
-                    Array.Reverse(size);
-                    // Write the size in Big Endian not EBCDIC
-                    bw.Write(size);
-                    bw.Write(item.RecData.ToCharArray());
-                    // Read the tiff image from disk, and dump it in the file
-                    bw.Write(data);
-                }
+
+                var recLen = data.Length + item.RecData.Length;
+                // Flip the bits
+                var size = BitConverter.GetBytes(recLen);
+                Array.Reverse(size);
+                bw.Write(size);
+                // Write the data in ASCII
+                // This has to be converted to a char array, .net will add the size (pascal string) if it's just a string
+                bw.Write(item.RecData.ToCharArray());
+                bw.Write(data);
             }
             // Make sure it's all on disk before we bail.
             bw.Flush();
