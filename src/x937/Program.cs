@@ -12,13 +12,12 @@ namespace x937
         {
             Debug.WriteLine(args.Length);
             var pgm = new Program();
-            pgm.ShowX9File(@"101Bank Of America20130218.ICL");
-            pgm.WriteX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218-new.ICL"));
+            var records = pgm.ShowX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL"));
+            WriteX9File(records, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218-new.ICL"));
         }
 
         public delegate void OnSummary(string recordType, string recData);
 
-        public readonly X9Recs X9Stuff = new X9Recs();
         public readonly XmlDocument XmlFields = new XmlDocument();
         private static TreeNode<string> _tvx9;
         private static OnSummary _onFileSummary;
@@ -30,13 +29,13 @@ namespace x937
         private FileStream _checkImageFs;
         private BinaryReader _checkImageBr;
 
-        public void WriteX9File(string newX9File)
+        public static void WriteX9File(X9Recs records, string newX9File)
         {
             // I'm honestly not sure how I'm going to handle this...
             var fs = new FileStream(newX9File, FileMode.Create, FileAccess.Write, FileShare.Read);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var bw = new BinaryWriter(fs,Encoding.ASCII);//Encoding.GetEncoding(37));
-            foreach (X9Rec item in X9Stuff)
+            foreach (X9Rec item in records)
             {
                 var data = new byte[0];
                 if (File.Exists(item.FilePath))
@@ -60,9 +59,10 @@ namespace x937
             fs.Close();
         }
 
-        public void ShowX9File(string x9File)
+        public X9Recs ShowX9File(string x9File)
         {
             XmlFields.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"X9Fields.xml"));
+            var ret = new X9Recs();
 
             _onFileSummary += ObjSumary.FileSummary;
             _onCashLetterSummary += ObjSumary.CashLetterSummary;
@@ -135,7 +135,7 @@ namespace x937
                 {
                     case "01": // File Header record
                         fileStarted = true;
-                        _tvx9.Data = "Header (01):" + X9Stuff.Add(new X9Rec("01", rec, ""));
+                        _tvx9.Data = "Header (01):" + ret.Add(new X9Rec("01", rec, ""));
                         _onFileSummary(rec.Substring(0, 2), rec);
                         break;
                     case "10": // cash file header
@@ -150,21 +150,21 @@ namespace x937
                                 else
                                 {
                                     Console.Error.WriteLine("No Cash Letter Control record.");
-                                    return;
+                                    return new X9Recs();
                                 }
                             }
                             else
                             {
                                 clStarted = true;
                             }
-                            clNode = _tvx9.AddChild("Cash Letter Header (10):" + X9Stuff.Add(new X9Rec("10", rec, "")));
+                            clNode = _tvx9.AddChild("Cash Letter Header (10):" + ret.Add(new X9Rec("10", rec, "")));
                             _onCashLetterSummary(rec.Substring(0, 2), rec);
                         }
                         else
                         {
                             // no file header yet
                             Console.Error.WriteLine("No File Header Record.");
-                            return;
+                            return new X9Recs();
                         }
                         break;
                     case "20": // bundle header record
@@ -181,7 +181,7 @@ namespace x937
                                     else
                                     {
                                         Console.Error.WriteLine("No Bundle Control record.");
-                                        return;
+                                        return new X9Recs();
                                     }
                                 }
                                 else
@@ -192,15 +192,15 @@ namespace x937
                             else
                             {
                                 Console.Error.WriteLine("No Cash Letter Header record.");
-                                return;
+                                return new X9Recs();
                             }
                         }
                         else
                         {
                             Console.Error.WriteLine("No File Header Record.");
-                            return;
+                            return new X9Recs();
                         }
-                        bundleNode = clNode.AddChild("Bundle Header (20):" + X9Stuff.Add(new X9Rec("20", rec, "")));
+                        bundleNode = clNode.AddChild("Bundle Header (20):" + ret.Add(new X9Rec("20", rec, "")));
                         _onBundleSummary(rec.Substring(0, 2), rec);
                         break;
                     case "25": // check detail record
@@ -213,25 +213,25 @@ namespace x937
                                 {
                                     // no check front 50
                                     Console.Error.WriteLine("No Check Image Detail Record 50 - Front.");
-                                    return;
+                                    return new X9Recs();
                                 }
                                 if (!checkFront52)
                                 {
                                     // no check front 52
                                     Console.Error.WriteLine("No Check Image Data Record 52 - Front.");
-                                    return;
+                                    return new X9Recs();
                                 }
                                 if (!checkBack50)
                                 {
                                     // no check back 50
                                     Console.Error.WriteLine("No Check Image Detail Record 50 - Back.");
-                                    return;
+                                    return new X9Recs();
                                 }
                                 if (!checkBack52)
                                 {
                                     // no check back 52
                                     Console.Error.WriteLine("No Check Image Data Record 52 - Back.");
-                                    return;
+                                    return new X9Recs();
                                 }
                                 checkBack50 = false;
                                 checkBack52 = false;
@@ -247,13 +247,13 @@ namespace x937
                         {
                             // no bundle header yet
                             Console.Error.WriteLine("No Bundle Header Record.");
-                            return;
+                            return new X9Recs();
                         }
                         checkCount += 1;
                         //if (Properties.Settings.Default.showItemNumber)
                         //{
                         //  checkNode = bundleNode.Nodes.Add(x9Stuff.Add(new x9Rec("25", rec, "")).ToString(), checkCount.ToString("#,###,###") + ": Check Detail (25)");
-                        checkNode = bundleNode.AddChild(checkCount.ToString("#,###,###") + ": Check Detail (25):" + X9Stuff.Add(new X9Rec("25", rec, "")));
+                        checkNode = bundleNode.AddChild(checkCount.ToString("#,###,###") + ": Check Detail (25):" + ret.Add(new X9Rec("25", rec, "")));
                         //}
                         //else
                         //{
@@ -261,22 +261,22 @@ namespace x937
                         //}
                         break;
                     case "26":
-                        checkNode.AddChild("Addendum A (26):" + X9Stuff.Add(new X9Rec("26", rec, "")));
+                        checkNode.AddChild("Addendum A (26):" + ret.Add(new X9Rec("26", rec, "")));
                         break;
                     case "28":
-                        checkNode.AddChild("Addendum C (28):" + X9Stuff.Add(new X9Rec("28", rec, "")));
+                        checkNode.AddChild("Addendum C (28):" + ret.Add(new X9Rec("28", rec, "")));
                         break;
                     case "31":
-                        checkNode.AddChild("Return (31):" + X9Stuff.Add(new X9Rec("31", rec, "")));
+                        checkNode.AddChild("Return (31):" + ret.Add(new X9Rec("31", rec, "")));
                         break;
                     case "32":
-                        checkNode.AddChild("Return Addendum A (32):" + X9Stuff.Add(new X9Rec("32", rec, "")));
+                        checkNode.AddChild("Return Addendum A (32):" + ret.Add(new X9Rec("32", rec, "")));
                         break;
                     case "33":
-                        checkNode.AddChild("Return Addendum B (33):" + X9Stuff.Add(new X9Rec("33", rec, "")));
+                        checkNode.AddChild("Return Addendum B (33):" + ret.Add(new X9Rec("33", rec, "")));
                         break;
                     case "35":
-                        checkNode.AddChild("Return Addendum D (35):" + X9Stuff.Add(new X9Rec("35", rec, "")));
+                        checkNode.AddChild("Return Addendum D (35):" + ret.Add(new X9Rec("35", rec, "")));
                         break;
                     case "50":
                         if (checkStarted)
@@ -285,13 +285,13 @@ namespace x937
                             {
                                 // back of check
                                 checkBack50 = true;
-                                checkNode.AddChild("Image Detail Back (50):" + X9Stuff.Add(new X9Rec("50", rec, "")));
+                                checkNode.AddChild("Image Detail Back (50):" + ret.Add(new X9Rec("50", rec, "")));
                             }
                             else
                             {
                                 // front of check
                                 checkFront50 = true;
-                                checkNode.AddChild("Image Detail Front (50):" + X9Stuff.Add(new X9Rec("50", rec, "")));
+                                checkNode.AddChild("Image Detail Front (50):" + ret.Add(new X9Rec("50", rec, "")));
                             }
                         }
                         break;
@@ -315,13 +315,13 @@ namespace x937
                             {
                                 // back image of check
                                 checkBack52 = true;
-                                checkNode.AddChild("Image Data Back (52):" + X9Stuff.Add(new X9Rec("52", rec, curPos + "," + outArr.Length)));
+                                checkNode.AddChild("Image Data Back (52):" + ret.Add(new X9Rec("52", rec, curPos + "," + outArr.Length)));
                             }
                             else
                             {
                                 // front image of check
                                 checkFront52 = true;
-                                checkNode.AddChild("Image Data Front (52):" + X9Stuff.Add(new X9Rec("52", rec, curPos + "," + outArr.Length)));
+                                checkNode.AddChild("Image Data Front (52):" + ret.Add(new X9Rec("52", rec, curPos + "," + outArr.Length)));
                             }
                         }
                         curPos += outArr.Length;
@@ -330,7 +330,7 @@ namespace x937
                         // read first 105 characters
                         if (bundleStarted && !bundleEnded)
                         {
-                            checkNode = bundleNode.AddChild("Credit/Reconcilation Record (61):" + X9Stuff.Add(new X9Rec("61", rec, "")));
+                            checkNode = bundleNode.AddChild("Credit/Reconcilation Record (61):" + ret.Add(new X9Rec("61", rec, "")));
                             checkStarted = true;
                             _onCreditSummary(rec.Substring(0, 2), rec);
                             checkBack50 = false;
@@ -341,17 +341,17 @@ namespace x937
                         break;
                     case "70":
                         bundleEnded = true;
-                        bundleNode.AddChild("Bundle Control (70):" + X9Stuff.Add(new X9Rec("70", rec, "")));
+                        bundleNode.AddChild("Bundle Control (70):" + ret.Add(new X9Rec("70", rec, "")));
                         _onBundleSummary(rec.Substring(0, 2), rec);
                         break;
                     case "90":
                         clEnded = true;
-                        clNode.AddChild("Cash Letter Control (90):" + X9Stuff.Add(new X9Rec("90", rec, "")));
+                        clNode.AddChild("Cash Letter Control (90):" + ret.Add(new X9Rec("90", rec, "")));
                         _onCashLetterSummary(rec.Substring(0, 2), rec);
                         break;
                     case "99":
                         fileEnded = true;
-                        _tvx9.AddChild("File Control (99):" + X9Stuff.Add(new X9Rec("99", rec, "")));
+                        _tvx9.AddChild("File Control (99):" + ret.Add(new X9Rec("99", rec, "")));
                         _onFileSummary(rec.Substring(0, 2), rec);
                         break;
                 }
@@ -383,23 +383,25 @@ namespace x937
                 //var data = x9Stuff[index];
                 //Console.WriteLine($"{indent}{node.Data} -- {data.recData}{(data.recImage.Length > 0 ? " -- Image@" : "")}{data.recImage}");//indent + (node.Data + ?? "null"));
                 Console.WriteLine($"{indent}{node.Data}");
-                DumpRecordData(index, indent, directory);
+                DumpRecordData(ret, index, indent, directory);
             }
 
             //x9Stuff.Dump();
             Console.WriteLine("x9Stuff");
-            foreach (X9Rec item in X9Stuff)
+            foreach (X9Rec item in ret)
             {
                 Console.WriteLine($"{item.RecData}");
             }
             ObjSumary.CreateNodeValues();
+
+            return ret;
         }
 
-        string _prev50 = "";
+        private string _prev50 = "";
 
-        void DumpRecordData(int index, string indent, string directory)
+        private void DumpRecordData(X9Recs records, int index, string indent, string directory)
         {
-            var rec = X9Stuff[index];
+            var rec = records[index];
             if (!int.TryParse(rec.RecType, out int iRecType)) return;
             var fieldNodes = XmlFields.SelectNodes("records/record[@type='" + rec.RecType + "']/field");
             if (fieldNodes != null)
