@@ -12,16 +12,14 @@ namespace x937
         {
             Debug.WriteLine(args.Length);
             var pgm = new Program();
-            //pgm.ShowX9File(@"C:\Users\wilcoxk\Downloads\MTS_ICLViewer\Sample ICL File\101Bank Of America20130218.ICL");
             pgm.ShowX9File(@"101Bank Of America20130218.ICL");
+            pgm.WriteX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218-new.ICL"));
         }
 
         public delegate void OnSummary(string recordType, string recData);
 
-        public delegate void OnObjectRefresh();
-
-        public X9Recs X9Stuff = new X9Recs();
-        public XmlDocument XmlFields = new XmlDocument();
+        public readonly X9Recs X9Stuff = new X9Recs();
+        public readonly XmlDocument XmlFields = new XmlDocument();
         private static TreeNode<string> _tvx9;
         private static OnSummary _onFileSummary;
         private static OnSummary _onCashLetterSummary;
@@ -31,6 +29,47 @@ namespace x937
         private static readonly Summary ObjSumary = new Summary();
         private FileStream _checkImageFs;
         private BinaryReader _checkImageBr;
+
+        public void WriteX9File(string newX9File)
+        {
+            // I'm honestly not sure how I'm going to handle this...
+            var fs = new FileStream(newX9File, FileMode.Create, FileAccess.Write, FileShare.Read);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var bw = new BinaryWriter(fs,Encoding.ASCII);//Encoding.GetEncoding(37));
+            foreach (X9Rec item in X9Stuff)
+            {
+                if (item.RecType != "52")
+                {
+                    // Get the size,
+                    var recLen = item.RecData.Length;
+                    // Flip the bits
+                    var size = BitConverter.GetBytes(recLen);
+                    Array.Reverse(size);
+                    // Write the size in Big Endian not EBCDIC
+                    bw.Write(size);
+                    // Write the data in ASCII
+                    // This has to be converted to a char array, .net will add the size (pascal string) if it's just a string
+                    bw.Write(item.RecData.ToCharArray());
+                }
+                else
+                {
+                    var data = File.ReadAllBytes(item.FilePath);
+                    var recLen = data.Length + item.RecData.Length;
+                    // Flip the bits
+                    var size = BitConverter.GetBytes(recLen);
+                    Array.Reverse(size);
+                    // Write the size in Big Endian not EBCDIC
+                    bw.Write(size);
+                    bw.Write(item.RecData.ToCharArray());
+                    // Read the tiff image from disk, and dump it in the file
+                    bw.Write(data);
+                }
+            }
+            // Make sure it's all on disk before we bail.
+            bw.Flush();
+            fs.Flush();
+            fs.Close();
+        }
 
         public void ShowX9File(string x9File)
         {
@@ -406,6 +445,7 @@ namespace x937
                 //fImg.Save($@"C:\temp\x937\{index}-front.tiff");
                 var fname = $@"{index}-{(_prev50 == "0" ? "front" : "back")}.tiff";
                 fname = Path.Combine(directory, fname);
+                rec.FilePath = fname;
                 File.WriteAllBytes(fname, recB);
                 //var img = Image.FromFile(fname);
                 //img.Dump();

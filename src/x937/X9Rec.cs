@@ -21,5 +21,7 @@
         public string RecData { get; set; }
 
         public string RecImage { get; set; }
+
+        public string FilePath { get; set; }
     }
 }
