@@ -104,14 +104,5 @@ namespace x937
 
             return tvSum;
         }
-
-        public static void Dump(TreeNode<string> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                var indent = Utils.CreateIndent(node.Level+1);
-                Console.WriteLine($"{indent}{node.Data}");
-            }
-        }
     }
 }

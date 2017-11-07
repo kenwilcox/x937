@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace x937
 {
@@ -12,6 +13,15 @@ namespace x937
                 sb.Append(' ');
             }
             return sb.ToString();
+        }
+
+        public static void Dump(TreeNode<string> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                var indent = Utils.CreateIndent(node.Level+1);
+                Console.WriteLine($"{indent}{node.Data}");
+            }
         }
     }
 }
