@@ -20,6 +20,8 @@ namespace x937
             var summary = GetSummary(records);
             Utils.Dump(summary.CreateNodeValues());
             WriteX9File(records, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218-new.ICL"));
+
+            TranslateRecordData(records);
         }
 
         public static void WriteX9File(X9Recs records, string newX9File)
@@ -435,6 +437,21 @@ namespace x937
             fname = Path.Combine(directory, fname);
             rec.FilePath = fname;
             File.WriteAllBytes(fname, rec.ImageData);
+        }
+
+        private static void TranslateRecordData(X9Recs records)
+        {
+            foreach (X9Rec item in records)
+            {
+                var rec = Translator.Translate(item);
+                if (rec is Unknown) continue;
+                var type = rec.GetType();
+                Console.WriteLine($"Received: {type}");
+                foreach (var prop in type.GetProperties())
+                {
+                    Console.WriteLine($"{Utils.Prettify(prop.Name)}: {prop.GetValue(rec)}");
+                }
+            }
         }
     }
 }
