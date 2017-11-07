@@ -6,27 +6,21 @@ using System.Xml;
 
 namespace x937
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
             Debug.WriteLine(args.Length);
-            var pgm = new Program();
-            var records = pgm.ParseX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL"));
+            var records = ParseX9File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL"));
             var tree = BuildTree(records);
 
-            XmlDocument xml = new XmlDocument();
+            var xml = new XmlDocument();
             xml.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"X9Fields.xml"));
-            pgm.DumpData(tree, records, xml);
+            DumpData(tree, records, xml);
             var summary = GetSummary(records);
             Utils.Dump(summary.CreateNodeValues());
             WriteX9File(records, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218-new.ICL"));
         }
-
-        //public readonly XmlDocument XmlFields = new XmlDocument();
-        //private static TreeNode<string> _tvx9;
-        private FileStream _checkImageFs;
-        private BinaryReader _checkImageBr;
 
         public static void WriteX9File(X9Recs records, string newX9File)
         {
@@ -102,7 +96,7 @@ namespace x937
             return tvx9;
         }
 
-        public X9Recs ParseX9File(string x9File)
+        public static X9Recs ParseX9File(string x9File)
         {
             var ret = new X9Recs();
 
@@ -306,13 +300,13 @@ namespace x937
                             {
                                 // back of check
                                 checkBack50 = true;
-                                ret.Add(new X9Rec("50", rec, "", CheckImage.Back));
+                                ret.Add(new X9Rec("50", rec, "", CheckImage.Back, null));
                             }
                             else
                             {
                                 // front of check
                                 checkFront50 = true;
-                                ret.Add(new X9Rec("50", rec, "", CheckImage.Front));
+                                ret.Add(new X9Rec("50", rec, "", CheckImage.Front, null));
                             }
                         }
                         break;
@@ -336,13 +330,13 @@ namespace x937
                             {
                                 // back image of check
                                 checkBack52 = true;
-                                ret.Add(new X9Rec("52", rec, curPos + "," + outArr.Length, CheckImage.Back));
+                                ret.Add(new X9Rec("52", rec, curPos + "," + outArr.Length, CheckImage.Back, outArr));
                             }
                             else
                             {
                                 // front image of check
                                 checkFront52 = true;
-                                ret.Add(new X9Rec("52", rec, curPos + "," + outArr.Length, CheckImage.Front));
+                                ret.Add(new X9Rec("52", rec, curPos + "," + outArr.Length, CheckImage.Front, outArr));
                             }
                         }
                         curPos += outArr.Length;
@@ -391,14 +385,11 @@ namespace x937
 
             br.Close();
             fs.Close();
-            // GAAAH! Open up two additional Reader objects for use later?
-            _checkImageFs = new FileStream(x9File, FileMode.Open, FileAccess.Read, FileShare.Read);
-            _checkImageBr = new BinaryReader(_checkImageFs);
 
             return ret;
         }
 
-        public void DumpData(TreeNode<string> nodes, X9Recs records, XmlDocument xml)
+        public static void DumpData(TreeNode<string> nodes, X9Recs records, XmlDocument xml)
         {
             // Move this to another method...
             var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"x937-images");
@@ -422,9 +413,7 @@ namespace x937
             }
         }
 
-        private string _prev50 = "";
-
-        private void DumpRecordData(X9Recs records, int index, string indent, string directory, XmlDocument doc)
+        private static void DumpRecordData(X9Recs records, int index, string indent, string directory, XmlNode doc)
         {
             var rec = records[index];
             if (!int.TryParse(rec.RecType, out int iRecType)) return;
@@ -441,31 +430,11 @@ namespace x937
                 //onSetImage(null, null);
             }
 
-            // Type 50
-            //<field name="View Side Indicator" type="N" comments="The only valid values are: '0' Front Image View '1' Rear Image View" end="32" start="32"/>
-            if (iRecType == 50)
-            {
-                _prev50 = rec.RecData.Substring(31, 1);
-            }
-
-            if (iRecType == 52)
-            {
-                var image = rec.RecImage;
-                int startPos = Convert.ToInt32(image.Substring(0, image.IndexOf(",", StringComparison.Ordinal)));
-                int imgLen = Convert.ToInt32(image.Substring(image.IndexOf(",", StringComparison.Ordinal) + 1));
-                _checkImageBr.BaseStream.Seek(startPos, SeekOrigin.Begin);
-                var recB = _checkImageBr.ReadBytes(imgLen); // new byte[imgLen + 1];
-                //Byte2Image(ref fImg, recB, 0);
-                //pbFront.Image = fImg;
-                //fImg.Dump($"Front: {index}");
-                //fImg.Save($@"C:\temp\x937\{index}-front.tiff");
-                var fname = $@"{index}-{(_prev50 == "0" ? "front" : "back")}.tiff";
-                fname = Path.Combine(directory, fname);
-                rec.FilePath = fname;
-                File.WriteAllBytes(fname, recB);
-                //var img = Image.FromFile(fname);
-                //img.Dump();
-            }
+            if (iRecType != 52) return;
+            var fname = $@"{index}-{rec.CheckImageType.ToString().ToLower()}.tiff";
+            fname = Path.Combine(directory, fname);
+            rec.FilePath = fname;
+            File.WriteAllBytes(fname, rec.ImageData);
         }
     }
 }
