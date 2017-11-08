@@ -41,7 +41,7 @@ namespace x937.Tests
         {
             var sut = new R10();
             sut.SetData(R10Data);
-            Assert.Equal("999999999", sut.ECEInstutionRoutingNumber);
+            Assert.Equal("999999999", sut.ECEInstitutionRoutingNumber);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace x937.Tests
         {
             var sut = new R10();
             sut.SetData(R10Data);
-            Assert.Equal("88888888", sut.CashLetterBusinessDate);;
+            Assert.Equal("88888888", sut.CashLetterBusinessDate);
         }
 
         [Fact]

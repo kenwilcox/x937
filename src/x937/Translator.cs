@@ -14,6 +14,7 @@ namespace x937
                 case "01": ret = new R01(); break;
                 case "10": ret = new R10(); break;
                 case "20": ret = new R20(); break;
+                case "25": ret = new R25(); break;
                 default: ret = new Unknown(); break;
             }
 
@@ -94,7 +95,7 @@ namespace x937
             Debug.WriteLine("R10 SetData() called");
             CollectionTypeIndicator = Data.Substring(2, 2);
             DestinationRoutingNumber = Data.Substring(4, 9);
-            ECEInstutionRoutingNumber = Data.Substring(13, 9);
+            ECEInstitutionRoutingNumber = Data.Substring(13, 9);
             CashLetterBusinessDate = Data.Substring(22, 8);
             CashLetterCreationDate = Data.Substring(30, 8);
             CashLetterCreationTime = Data.Substring(38, 4);
@@ -110,7 +111,7 @@ namespace x937
 
         public string CollectionTypeIndicator { get; set; }
         public string DestinationRoutingNumber { get; set; }
-        public string ECEInstutionRoutingNumber { get; set; }
+        public string ECEInstitutionRoutingNumber { get; set; }
         public string CashLetterBusinessDate { get; set; }
         public string CashLetterCreationDate { get; set; }
         public string CashLetterCreationTime { get; set; }
@@ -132,10 +133,10 @@ namespace x937
             Debug.WriteLine("R20 SetData() called");
             CollectionTypeIndicator = Data.Substring(2, 2);
             DestinationRoutingNumber = Data.Substring(4, 9);
-            ECEInstutionRoutingNumber = Data.Substring(13, 9);
+            ECEInstitutionRoutingNumber = Data.Substring(13, 9);
             BatchBusinessDate = Data.Substring(22, 8);
-            BatchCreationDate = Data.Substring(23, 8);
-            BatchId = Data.Substring(30, 8);
+            BatchCreationDate = Data.Substring(30, 8);
+            BatchId = Data.Substring(38, 10);
             BatchSequenceNumber = Data.Substring(48, 4);
             CycleNumber = Data.Substring(52, 2);
             ReturnLocationRoutingNumber = Data.Substring(54, 9);
@@ -145,7 +146,7 @@ namespace x937
 
         public string CollectionTypeIndicator { get; set; }
         public string DestinationRoutingNumber { get; set; }
-        public string ECEInstutionRoutingNumber { get; set; }
+        public string ECEInstitutionRoutingNumber { get; set; }
         public string BatchBusinessDate { get; set; }
         public string BatchCreationDate { get; set; }
         public string BatchId { get; set; }
@@ -154,5 +155,43 @@ namespace x937
         public string ReturnLocationRoutingNumber { get; set; }
         public string UserField { get; set; }
         public string Reserved { get; set; }
+    }
+
+    public class R25: X9Record
+    {
+        public override void SetData(string data)
+        {
+            base.SetData(data);
+            Debug.WriteLine("R25 SetData() called");
+            AuxiliaryOnUs = Data.Substring(2, 15);
+            ExternamProcessingCode = Data.Substring(17, 1);
+            PayorBankRoutingNumber = Data.Substring(18, 8);
+            PriorBankRoutingNumberCheckDigit = Data.Substring(26, 1);
+            OnUs = Data.Substring(27, 20);
+            ItemAmount = Data.Substring(47, 10);
+            ECEInstitutionItemSequenceNumber = Data.Substring(57, 15);
+            DocumentationTypeIndicator = Data.Substring(72, 1);
+            ReturnAcceptanceIndicator = Data.Substring(73, 1);
+            MICRValidIndicator = Data.Substring(74, 1);
+            BOFDIndicator = Data.Substring(75, 1);
+            CheckDetailRecordAddendumCount = Data.Substring(76, 2);
+            CorrectionIndicator = Data.Substring(78, 1);
+            ArchiveTypeIndicator = Data.Substring(79, 1);
+        }
+
+        public string AuxiliaryOnUs { get; set; }
+        public string ExternamProcessingCode { get; set; }
+        public string PayorBankRoutingNumber { get; set; }
+        public string PriorBankRoutingNumberCheckDigit { get; set; }
+        public string OnUs { get; set; }
+        public string ItemAmount { get; set; }
+        public string ECEInstitutionItemSequenceNumber { get; set; }
+        public string DocumentationTypeIndicator { get; set; }
+        public string ReturnAcceptanceIndicator { get; set; }
+        public string MICRValidIndicator { get; set; }
+        public string BOFDIndicator { get; set; }
+        public string CheckDetailRecordAddendumCount { get; set; }
+        public string CorrectionIndicator { get; set; }
+        public string ArchiveTypeIndicator { get; set; }
     }
 }
