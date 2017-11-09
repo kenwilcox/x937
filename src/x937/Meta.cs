@@ -37,6 +37,7 @@ namespace x937
                 { new Record("CashLetterHeaderRecord", "10"), BuildT10Fields() },
                 { new Record("BatchHeaderRecord", "20"), BuildT20Fields() },
                 { new Record("CheckDetailRecord", "25"), BuildT25Fields() },
+                { new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields() },
             };
 
             return meta;
@@ -51,6 +52,7 @@ namespace x937
                 case "10": ret = new R10(); break;
                 case "20": ret = new R20(); break;
                 case "25": ret = new R25(); break;
+                case "26": ret = new R26(); break;
                 default: ret = new Unknown(); break;
             }
             return ret;
@@ -220,6 +222,27 @@ namespace x937
                 new Field {Order = 13, FieldName = "CheckDetailRecordAddendumCount", Usage = "M", DocPosition = new Range(77, 78), Type = "N", Value = "12", ValueType = ValueType.Literal},
                 new Field {Order = 14, FieldName = "CorrectionIndicator", Usage = "M", DocPosition = new Range(79, 79), Type = "N", Value = "0|1|2|3|4", ValueType = ValueType.Logical},
                 new Field {Order = 15, FieldName = "ArchiveTypeIndicator", Usage = "C", DocPosition = new Range(80, 80), Type = "AN", Value = "", ValueType = ValueType.Blank},
+            };
+            return field;
+        }
+
+        private static List<Field> BuildT26Fields()
+        {
+            var field = new List<Field>
+            {
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "26", ValueType = ValueType.Literal},
+                new Field {Order = 2, FieldName = "CheckDetailAddendumARecordNumber", Usage = "M", DocPosition = new Range(3, 3), Type = "N", Value = "1", ValueType = ValueType.Literal},
+                new Field {Order = 3, FieldName = "BOFDRoutingNumber", Usage = "C", DocPosition = new Range(4, 12), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
+                new Field {Order = 4, FieldName = "BOFDBusinessDate", Usage = "C", DocPosition = new Range(13, 20), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
+                new Field {Order = 5, FieldName = "BOFDItemSequenceNumber", Usage = "C", DocPosition = new Range(21, 35), Type = "NB", Value = "", ValueType = ValueType.Sequence},
+                new Field {Order = 6, FieldName = "BOFDDepositAccountNumber", Usage = "C", DocPosition = new Range(36, 53), Type = "ANS", Value = "YYYYMMDD", ValueType = ValueType.Blank},
+                new Field {Order = 7, FieldName = "BOFDDepositBranch", Usage = "C", DocPosition = new Range(54, 58), Type = "ANS", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 8, FieldName = "PayeeName", Usage = "C", DocPosition = new Range(59, 73), Type = "ANS", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 9, FieldName = "TruncationIndicator", Usage = "C", DocPosition = new Range(74, 74), Type = "A", Value = "Y", ValueType = ValueType.Literal},
+                new Field {Order = 10, FieldName = "BOFDConversionIndicator", Usage = "C", DocPosition = new Range(75, 75), Type = "AN", Value = "2", ValueType = ValueType.Literal},
+                new Field {Order = 11, FieldName = "BOFDCorrectionIndicator", Usage = "C", DocPosition = new Range(76, 76), Type = "N", Value = "0", ValueType = ValueType.Literal},
+                new Field {Order = 12, FieldName = "UserField", Usage = "C", DocPosition = new Range(77, 77), Type = "ANS", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
             };
             return field;
         }

@@ -15,6 +15,7 @@ namespace x937
                 case "10": ret = new R10(); break;
                 case "20": ret = new R20(); break;
                 case "25": ret = new R25(); break;
+                case "26": ret = new R26(); break;
                 default: ret = new Unknown(); break;
             }
 
@@ -193,5 +194,39 @@ namespace x937
         public string CheckDetailRecordAddendumCount { get; set; }
         public string CorrectionIndicator { get; set; }
         public string ArchiveTypeIndicator { get; set; }
+    }
+
+    public class R26: X9Record
+    {
+        public override void SetData(string data)
+        {
+            base.SetData(data);
+            Debug.WriteLine("R26 SetData() called");
+            CheckDetailAddendumARecordNumber = Data.Substring(2, 1);
+            BOFDRoutingNumber = Data.Substring(3, 9);
+            BOFDBusinessDate = Data.Substring(12, 8);
+            BOFDItemSequenceNumber = Data.Substring(20, 15);
+            BOFDDepositAccountNumber = Data.Substring(35, 18);
+            BOFDDepositBranch = Data.Substring(53, 5);
+            PayeeName = Data.Substring(58, 15);
+            TruncationIndicator = Data.Substring(73, 1);
+            BOFDConversionIndicator = Data.Substring(74, 1);
+            BOFDCorrectionIndicator = Data.Substring(75, 1);
+            UserField = Data.Substring(76, 1);
+            Reserved = Data.Substring(77, 3);
+        }
+
+        public string CheckDetailAddendumARecordNumber { get; set; }
+        public string BOFDRoutingNumber { get; set; }
+        public string BOFDBusinessDate { get; set; }
+        public string BOFDItemSequenceNumber { get; set; }
+        public string BOFDDepositAccountNumber { get; set; }
+        public string BOFDDepositBranch { get; set; }
+        public string PayeeName { get; set; }
+        public string TruncationIndicator { get; set; }
+        public string BOFDConversionIndicator { get; set; }
+        public string BOFDCorrectionIndicator { get; set; }
+        public string UserField { get; set; }
+        public string Reserved { get; set; }
     }
 }

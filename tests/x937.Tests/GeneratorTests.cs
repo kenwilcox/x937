@@ -12,6 +12,7 @@ namespace x937.Tests
         [InlineData("CashLetterHeaderRecord", "10")]
         [InlineData("BatchHeaderRecord", "20")]
         [InlineData("CheckDetailRecord", "25")]
+        [InlineData("CheckDetailAddendumARecord", "26")]
         public void TestThatGenerate_ReturnsExpectedCode(string recordName, string recordType)
         {
             // Arrange
