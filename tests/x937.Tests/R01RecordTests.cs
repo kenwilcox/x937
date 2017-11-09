@@ -90,7 +90,7 @@ namespace x937.Tests
         [Fact]
         public void TestThatR01_HasTheRightValueFor_CountryCode()
         {
-            Assert.Equal("  ", _sut.CountryCode);
+            Assert.Equal("--", _sut.CountryCode);
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace x937.Tests
         [Fact]
         public void TestThatR01_HasTheRightValueFor_Reserved()
         {
-            Assert.Equal(" ", _sut.Reserved);
+            Assert.Equal("-", _sut.Reserved);
         }
     }
 }

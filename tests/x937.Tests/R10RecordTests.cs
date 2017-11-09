@@ -96,19 +96,19 @@ namespace x937.Tests
         [Fact]
         public void TestThatR10_HasTheRightValueFor_FedWorkType()
         {
-            Assert.Equal(" ", _sut.FedWorkType);
+            Assert.Equal("-", _sut.FedWorkType);
         }
 
         [Fact]
         public void TestThatR10_HasTheRightValueFor_UserField()
         {
-            Assert.Equal("  ", _sut.UserField);
+            Assert.Equal("--", _sut.UserField);
         }
 
         [Fact]
         public void TestThatR10_HasTheRightValueFor_User()
         {
-            Assert.Equal(" ", _sut.User);
+            Assert.Equal("-", _sut.User);
         }
     }
 }

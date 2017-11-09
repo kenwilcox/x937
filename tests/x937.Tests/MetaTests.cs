@@ -18,6 +18,7 @@ namespace x937.Tests
         [InlineData("BatchHeaderRecord", "20", 80)]
         [InlineData("CheckDetailRecord", "25", 80)]
         [InlineData("CheckDetailAddendumARecord", "26", 80)]
+        [InlineData("ImageViewDetailRecord", "50", 80)]
         public void TestMeta_ObjectFieldLength(string recordName, string recordType, int expectedLength)
         {
             // Arrange
@@ -48,6 +49,7 @@ namespace x937.Tests
         [InlineData("BatchHeaderRecord", "20", 80)]
         [InlineData("CheckDetailRecord", "25", 80)]
         [InlineData("CheckDetailAddendumARecord", "26", 80)]
+        [InlineData("ImageViewDetailRecord", "50", 80)]
         public void TestMeta_MetaFieldCount(string recordName, string recordType, int expectedCount)
         {
             // Arrange
@@ -78,6 +80,7 @@ namespace x937.Tests
         [InlineData("BatchHeaderRecord", "20", 12)]
         [InlineData("CheckDetailRecord", "25", 15)]
         [InlineData("CheckDetailAddendumARecord", "26", 13)]
+        [InlineData("ImageViewDetailRecord", "50", 17)]
         public void TestMeta_MetaFieldCounts(string recordName, string recordType, int fieldCount)
         {
             // Arrange, Act
@@ -92,6 +95,7 @@ namespace x937.Tests
         [InlineData("BatchHeaderRecord", "20", 12)]
         [InlineData("CheckDetailRecord", "25", 15)]
         [InlineData("CheckDetailAddendumARecord", "26", 13)]
+        [InlineData("ImageViewDetailRecord", "50", 17)]
         public void TestMeta_MetaFieldNumbers(string recordName, string recordType, int fieldCount)
         {
             // Arrange
@@ -115,6 +119,7 @@ namespace x937.Tests
         [InlineData("BatchHeaderRecord", "20")]
         [InlineData("CheckDetailRecord", "25")]
         [InlineData("CheckDetailAddendumARecord", "26")]
+        [InlineData("ImageViewDetailRecord", "50")]
         public void TestMeta_ContainsValidUsage(string recordName, string recordType)
         {
             // Arrange

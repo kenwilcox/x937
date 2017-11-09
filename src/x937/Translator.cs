@@ -16,6 +16,7 @@ namespace x937
                 case "20": ret = new R20(); break;
                 case "25": ret = new R25(); break;
                 case "26": ret = new R26(); break;
+                case "50": ret = new R50(); break;
                 default: ret = new Unknown(); break;
             }
 
@@ -226,6 +227,48 @@ namespace x937
         public string TruncationIndicator { get; set; }
         public string BOFDConversionIndicator { get; set; }
         public string BOFDCorrectionIndicator { get; set; }
+        public string UserField { get; set; }
+        public string Reserved { get; set; }
+    }
+
+    public class R50: X9Record
+    {
+        public override void SetData(string data)
+        {
+            base.SetData(data);
+            Debug.WriteLine("R50 SetData() called");
+            ImageIndicator = Data.Substring(2, 1);
+            ImageCreatorRoutingNumber = Data.Substring(3, 9);
+            ImageCreatorDate = Data.Substring(12, 8);
+            ImageViewFormatIndicator = Data.Substring(20, 2);
+            ImageViewCompressionAlgorithmIdentifier = Data.Substring(22, 2);
+            ImageViewDataSize = Data.Substring(24, 7);
+            ViewSideIndicator = Data.Substring(31, 1);
+            ViewDescriptor = Data.Substring(32, 2);
+            DigitalSignatureIndicator = Data.Substring(34, 1);
+            DigitalSignatureMethod = Data.Substring(35, 2);
+            SecurityKeySize = Data.Substring(37, 5);
+            StartOfProtectedData = Data.Substring(42, 7);
+            LengthOfProtectedData = Data.Substring(49, 7);
+            ImageRecreateIndicator = Data.Substring(56, 1);
+            UserField = Data.Substring(57, 8);
+            Reserved = Data.Substring(65, 15);
+        }
+
+        public string ImageIndicator { get; set; }
+        public string ImageCreatorRoutingNumber { get; set; }
+        public string ImageCreatorDate { get; set; }
+        public string ImageViewFormatIndicator { get; set; }
+        public string ImageViewCompressionAlgorithmIdentifier { get; set; }
+        public string ImageViewDataSize { get; set; }
+        public string ViewSideIndicator { get; set; }
+        public string ViewDescriptor { get; set; }
+        public string DigitalSignatureIndicator { get; set; }
+        public string DigitalSignatureMethod { get; set; }
+        public string SecurityKeySize { get; set; }
+        public string StartOfProtectedData { get; set; }
+        public string LengthOfProtectedData { get; set; }
+        public string ImageRecreateIndicator { get; set; }
         public string UserField { get; set; }
         public string Reserved { get; set; }
     }

@@ -60,7 +60,7 @@ namespace x937.Tests
         [Fact]
         public void TestThatR20_HasTheRightValueFor_BatchId()
         {
-            Assert.Equal("          ", _sut.BatchId);
+            Assert.Equal("----------", _sut.BatchId);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace x937.Tests
         [Fact]
         public void TestThatR20_HasTheRightValueFor_CycleNumber()
         {
-            Assert.Equal("  ", _sut.CycleNumber);
+            Assert.Equal("--", _sut.CycleNumber);
         }
 
         [Fact]
@@ -84,13 +84,13 @@ namespace x937.Tests
         [Fact]
         public void TestThatR20_HasTheRightValueFor_UserField()
         {
-            Assert.Equal("     ", _sut.UserField);
+            Assert.Equal("-----", _sut.UserField);
         }
 
         [Fact]
         public void TestThatR20_HasTheRightValueFor_Reserved()
         {
-            Assert.Equal("            ", _sut.Reserved);
+            Assert.Equal("------------", _sut.Reserved);
         }
     }
 }

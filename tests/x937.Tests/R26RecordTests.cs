@@ -54,19 +54,19 @@ namespace x937.Tests
         [Fact]
         public void TestThatR26_HasTheRightValueFor_BOFDDepositAccountNumber()
         {
-            Assert.Equal("                  ", _sut.BOFDDepositAccountNumber);
+            Assert.Equal("------------------", _sut.BOFDDepositAccountNumber);
         }
 
         [Fact]
         public void TestThatR26_HasTheRightValueFor_BOFDDepositBranch()
         {
-            Assert.Equal("     ", _sut.BOFDDepositBranch);
+            Assert.Equal("-----", _sut.BOFDDepositBranch);
         }
 
         [Fact]
         public void TestThatR26_HasTheRightValueFor_PayeeName()
         {
-            Assert.Equal("               ", _sut.PayeeName);
+            Assert.Equal("---------------", _sut.PayeeName);
         }
 
         [Fact]
@@ -90,13 +90,13 @@ namespace x937.Tests
         [Fact]
         public void TestThatR26_HasTheRightValueFor_UserField()
         {
-            Assert.Equal(" ", _sut.UserField);
+            Assert.Equal("-", _sut.UserField);
         }
 
         [Fact]
         public void TestThatR26_HasTheRightValueFor_Reserved()
         {
-            Assert.Equal("   ", _sut.Reserved);
+            Assert.Equal("---", _sut.Reserved);
         }
     }
 }

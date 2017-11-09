@@ -38,6 +38,7 @@ namespace x937
                 { new Record("BatchHeaderRecord", "20"), BuildT20Fields() },
                 { new Record("CheckDetailRecord", "25"), BuildT25Fields() },
                 { new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields() },
+                { new Record("ImageViewDetailRecord", "50"), BuildT50Fields() }
             };
 
             return meta;
@@ -53,6 +54,7 @@ namespace x937
                 case "20": ret = new R20(); break;
                 case "25": ret = new R25(); break;
                 case "26": ret = new R26(); break;
+                case "50": ret = new R50(); break;
                 default: ret = new Unknown(); break;
             }
             return ret;
@@ -116,7 +118,7 @@ namespace x937
 
         private static string GetBlank(int size)
         {
-            return "".PadLeft(size, ' ');
+            return "".PadLeft(size, '-'); // Dashes are easier to see
         }
 
         private static string GetRepeating(char character, int size)
@@ -184,7 +186,7 @@ namespace x937
 
         private static List<Field> BuildT20Fields()
         {
-            var field = new List<Field>
+            var fields = new List<Field>
             {
                 new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "20", ValueType = ValueType.Literal},
                 new Field {Order = 2, FieldName = "CollectionTypeIndicator", Usage = "M", DocPosition = new Range(3, 4), Type = "N", Value = "01", ValueType = ValueType.Literal},
@@ -199,12 +201,12 @@ namespace x937
                 new Field {Order = 11, FieldName = "UserField", Usage = "M", DocPosition = new Range(64, 68), Type = "ANS", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 12, FieldName = "Reserved", Usage = "M", DocPosition = new Range(69, 80), Type = "B", Value = "10", ValueType = ValueType.Blank},
             };
-            return field;
+            return fields;
         }
 
         private static List<Field> BuildT25Fields()
         {
-            var field = new List<Field>
+            var fields = new List<Field>
             {
                 new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "25", ValueType = ValueType.Literal},
                 new Field {Order = 2, FieldName = "AuxiliaryOnUs", Usage = "C", DocPosition = new Range(3, 17), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
@@ -223,12 +225,12 @@ namespace x937
                 new Field {Order = 14, FieldName = "CorrectionIndicator", Usage = "M", DocPosition = new Range(79, 79), Type = "N", Value = "0|1|2|3|4", ValueType = ValueType.Logical},
                 new Field {Order = 15, FieldName = "ArchiveTypeIndicator", Usage = "C", DocPosition = new Range(80, 80), Type = "AN", Value = "", ValueType = ValueType.Blank},
             };
-            return field;
+            return fields;
         }
 
         private static List<Field> BuildT26Fields()
         {
-            var field = new List<Field>
+            var fields = new List<Field>
             {
                 new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "26", ValueType = ValueType.Literal},
                 new Field {Order = 2, FieldName = "CheckDetailAddendumARecordNumber", Usage = "M", DocPosition = new Range(3, 3), Type = "N", Value = "1", ValueType = ValueType.Literal},
@@ -244,7 +246,32 @@ namespace x937
                 new Field {Order = 12, FieldName = "UserField", Usage = "C", DocPosition = new Range(77, 77), Type = "ANS", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
             };
-            return field;
+            return fields;
+        }
+
+        private static List<Field> BuildT50Fields()
+        {
+            var fields = new List<Field>
+            {
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "50", ValueType = ValueType.Literal},
+                new Field {Order = 2, FieldName = "ImageIndicator", Usage = "M", DocPosition = new Range(3, 3), Type = "N", Value = "1", ValueType = ValueType.Literal},
+                new Field {Order = 3, FieldName = "ImageCreatorRoutingNumber", Usage = "M", DocPosition = new Range(4, 12), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
+                new Field {Order = 4, FieldName = "ImageCreatorDate", Usage = "M", DocPosition = new Range(13, 20), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
+                new Field {Order = 5, FieldName = "ImageViewFormatIndicator", Usage = "M", DocPosition = new Range(21, 22), Type = "N", Value = "0 ", ValueType = ValueType.Literal},
+                new Field {Order = 6, FieldName = "ImageViewCompressionAlgorithmIdentifier", Usage = "M", DocPosition = new Range(23, 24), Type = "N", Value = "0 ", ValueType = ValueType.Literal},
+                new Field {Order = 7, FieldName = "ImageViewDataSize", Usage = "C", DocPosition = new Range(25, 31), Type = "N", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 8, FieldName = "ViewSideIndicator", Usage = "M", DocPosition = new Range(32, 32), Type = "N", Value = "0|1", ValueType = ValueType.Logical},
+                new Field {Order = 9, FieldName = "ViewDescriptor", Usage = "M", DocPosition = new Range(33, 34), Type = "N", Value = "0 ", ValueType = ValueType.Literal},
+                new Field {Order = 10, FieldName = "DigitalSignatureIndicator", Usage = "M", DocPosition = new Range(35, 35), Type = "NB", Value = "0", ValueType = ValueType.Literal},
+                new Field {Order = 11, FieldName = "DigitalSignatureMethod", Usage = "C", DocPosition = new Range(36, 37), Type = "N", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 12, FieldName = "SecurityKeySize", Usage = "C", DocPosition = new Range(38, 42), Type = "N", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 13, FieldName = "StartOfProtectedData", Usage = "C", DocPosition = new Range(43, 49), Type = "N", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 14, FieldName = "LengthOfProtectedData", Usage = "C", DocPosition = new Range(50, 56), Type = "N", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 15, FieldName = "ImageRecreateIndicator", Usage = "C", DocPosition = new Range(57, 57), Type = "N", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 16, FieldName = "UserField", Usage = "C", DocPosition = new Range(58, 65), Type = "ANS", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 17, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "26", ValueType = ValueType.Blank},
+            };
+            return fields;
         }
     }
 

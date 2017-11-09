@@ -108,7 +108,7 @@ namespace x937.Tests
         [Fact]
         public void TestThatR25_HasTheRightValueFor_ArchiveTypeIndicator()
         {
-            Assert.Equal(" ", _sut.ArchiveTypeIndicator);
+            Assert.Equal("-", _sut.ArchiveTypeIndicator);
         }
     }
 }
