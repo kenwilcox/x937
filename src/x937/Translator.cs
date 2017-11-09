@@ -164,7 +164,7 @@ namespace x937
             base.SetData(data);
             Debug.WriteLine("R25 SetData() called");
             AuxiliaryOnUs = Data.Substring(2, 15);
-            ExternamProcessingCode = Data.Substring(17, 1);
+            ExternalProcessingCode = Data.Substring(17, 1);
             PayorBankRoutingNumber = Data.Substring(18, 8);
             PriorBankRoutingNumberCheckDigit = Data.Substring(26, 1);
             OnUs = Data.Substring(27, 20);
@@ -180,7 +180,7 @@ namespace x937
         }
 
         public string AuxiliaryOnUs { get; set; }
-        public string ExternamProcessingCode { get; set; }
+        public string ExternalProcessingCode { get; set; }
         public string PayorBankRoutingNumber { get; set; }
         public string PriorBankRoutingNumberCheckDigit { get; set; }
         public string OnUs { get; set; }

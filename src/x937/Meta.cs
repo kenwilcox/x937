@@ -62,18 +62,25 @@ namespace x937
             var sb = new StringBuilder();
             foreach (var field in meta)
             {
+                var length = sb.Length;
                 switch (field.ValueType)
                 {
                     case ValueType.Literal: sb.Append(field.Value);break;
-                    case ValueType.RoutePattern: sb.Append("TTTTAAAAC");break;
+                    case ValueType.RoutePattern: sb.Append("TTTTAAAAC".Substring(0, field.Size));break; // some route patterns exclude the check digit
                     case ValueType.Position: sb.Append("4242");break;
                     case ValueType.Date: sb.Append(field.Size == 8 ? "YYYYMMDD" : "HHmm");break;
                     case ValueType.Logical: sb.Append(GetLogical(field.Value, field.Size)); break;
                     case ValueType.Cr61: sb.Append("CR61");break; // CR61 is len(4)
                     case ValueType.Blank: sb.Append(GetBlank(field.Size)); break;
                     case ValueType.Undefined: sb.Append(GetUndefined(field.Type, field.Size)); break;
+                        // TODO update these with better test values
+                    case ValueType.NBSM: sb.Append(GetRepeating('x', field.Size)); break;
+                    case ValueType.NBSMOS: sb.Append(GetRepeating('z', field.Size));break;
+                    case ValueType.LeadingZeros: sb.Append(GetUndefined(field.Type, field.Size)); break;
+                    case ValueType.Sequence: sb.Append(GetUndefined(field.Type, field.Size));break;
                     default: throw new Exception($"No processor for {field.ValueType}");
                 }
+                if (sb.Length != length + field.Size) throw new Exception($"Field {field.FieldName} generated a size of {sb.Length - length}, but it should have been {field.Size}");
             }
 
             return sb.ToString();
@@ -100,7 +107,7 @@ namespace x937
 
         private static string GetLogical(string value, int size)
         {
-            var parts = value.Split('|');
+            var parts = value.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries);
             var idx = Rnd.Next(parts.Length);
             return parts[idx].PadLeft(size, ' ');
         }
@@ -108,6 +115,11 @@ namespace x937
         private static string GetBlank(int size)
         {
             return "".PadLeft(size, ' ');
+        }
+
+        private static string GetRepeating(char character, int size)
+        {
+            return "".PadLeft(size, character);
         }
 
         private static string GetUndefined(string type, int size)
@@ -192,9 +204,9 @@ namespace x937
         {
             var field = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "20", ValueType = ValueType.Literal},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "25", ValueType = ValueType.Literal},
                 new Field {Order = 2, FieldName = "AuxiliaryOnUs", Usage = "C", DocPosition = new Range(3, 17), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
-                new Field {Order = 3, FieldName = "ExternamProcessingCode", Usage = "C", DocPosition = new Range(18, 18), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
+                new Field {Order = 3, FieldName = "ExternalProcessingCode", Usage = "C", DocPosition = new Range(18, 18), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
                 // Everywhere else this is TTTTAAAAC, but here the C is specified....
                 new Field {Order = 4, FieldName = "PayorBankRoutingNumber", Usage = "M", DocPosition = new Range(19, 26), Type = "N", Value = "TTTTAAAA", ValueType = ValueType.RoutePattern},
                 new Field {Order = 5, FieldName = "PriorBankRoutingNumberCheckDigit", Usage = "M", DocPosition = new Range(27, 27), Type = "N", Value = "C", ValueType = ValueType.Literal},
@@ -205,7 +217,7 @@ namespace x937
                 new Field {Order = 10, FieldName = "ReturnAcceptanceIndicator", Usage = "C", DocPosition = new Range(74, 74), Type = "AN", Value = "6", ValueType = ValueType.Literal},
                 new Field {Order = 11, FieldName = "MICRValidIndicator", Usage = "C", DocPosition = new Range(75, 75), Type = "N", Value = "1|2|3|4", ValueType = ValueType.Logical},
                 new Field {Order = 12, FieldName = "BOFDIndicator", Usage = "M", DocPosition = new Range(76, 76), Type = "A", Value = "Y|N|U", ValueType = ValueType.Logical},
-                new Field {Order = 13, FieldName = "CheckDetailRecordAddendumCount", Usage = "M", DocPosition = new Range(77, 78), Type = "N", Value = "1", ValueType = ValueType.Literal},
+                new Field {Order = 13, FieldName = "CheckDetailRecordAddendumCount", Usage = "M", DocPosition = new Range(77, 78), Type = "N", Value = "12", ValueType = ValueType.Literal},
                 new Field {Order = 14, FieldName = "CorrectionIndicator", Usage = "M", DocPosition = new Range(79, 79), Type = "N", Value = "0|1|2|3|4", ValueType = ValueType.Logical},
                 new Field {Order = 15, FieldName = "ArchiveTypeIndicator", Usage = "C", DocPosition = new Range(80, 80), Type = "AN", Value = "", ValueType = ValueType.Blank},
             };
@@ -219,10 +231,8 @@ namespace x937
 
     public class Record: IEquatable<Record>
     {
-        public readonly string Name;// { get; set; }
-        //public string Name { get; private set; }
-        public readonly string TypeId;// { get; set; }
-        //public string TypeId { get; private set; }
+        public readonly string Name;
+        public readonly string TypeId;
 
         public Record(string name, string typeId)
         {
@@ -256,34 +266,46 @@ namespace x937
         public string Type { get; set; }
         public string Value { get; set; }
         public ValueType ValueType { get; set; }
-        // Because the documentation is 0 based and .net is 0 based...
-        public Range Position
-        {
-            get
-            {
-                return new Range { Start = DocPosition.Start -1, End = DocPosition.End};
-            }
-        }
-
-        public int Size
-        {
-            get
-            {
-                return Position.End - Position.Start;
-            }
-        }
+        // Because the documentation is 1 based and .net is 0 based...
+        public Range Position => new Range(DocPosition.Start -1, DocPosition.End);
+        public int Size => Position.End - Position.Start;
     }
 
-    public struct Range
+    public struct Range: IEquatable<Range>
     {
+        public readonly int Start;
+        public readonly int End;
+
         public Range(int start, int end)
         {
             Start = start;
             End = end;
         }
 
-        public int Start;
-        public int End;
+        public override bool Equals(object obj)
+        {
+            return Equals((Range)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Start.GetHashCode() * End.GetHashCode();
+        }
+
+        public bool Equals(Range obj)
+        {
+            return obj.Start == Start && obj.End == End;
+        }
+
+        public static bool operator ==(Range left, Range right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Range left, Range right)
+        {
+            return !(left == right);
+        }
     }
 
     public enum ValueType
@@ -300,19 +322,5 @@ namespace x937
         NBSMOS,
         LeadingZeros,
         Sequence,
-    }
-
-    public static class MetaExt
-    {
-        public static Range To(this int start, int end)
-        {
-            return new Range {Start = start, End = end};
-        }
-
-        public static string Substring(this string obj, Range range)
-        {
-            if (range.End < 0) range.End = obj.Length + range.End;
-            return obj.Substring(range.Start, range.End - range.Start);
-        }
     }
 }

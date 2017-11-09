@@ -105,98 +105,21 @@ namespace x937.Tests
             Assert.Equal(fieldCount, counter);
         }
 
-        [Fact]
-        public void TestMeta_ExpectedStringValuesForR01()
+        [Theory]
+        [InlineData("FileHeaderRecord", "01")]
+        [InlineData("CashLetterHeaderRecord", "10")]
+        [InlineData("BatchHeaderRecord", "20")]
+        [InlineData("CheckDetailRecord", "25")]
+        public void TestMeta_ContainsValidUsage(string recordName, string recordType)
         {
             // Arrange
-            var key = new Record("FileHeaderRecord", "01");
-            const int length = 80;
-            var record = Builder.GetObjectFor(key);
+            var meta = _metadata[new Record(recordName, recordType)];
 
-            // Act
-            var str = Builder.GetTestStringFor(key);
-            record.SetData(str);
-            var rec = record as R01;
-
-            // Assert
-            Assert.NotNull(rec);
-            Assert.Equal(length, str.Length);
-            Assert.Equal("01", rec.RecordType);
-            Assert.Equal("03", rec.StandardLevel);
-            Assert.Matches(@"^[T|P]$", rec.TestFileIndicator);
-            Assert.Equal("TTTTAAAAC", rec.ImmediateDestinationRoutingNumber);
-            Assert.Equal("TTTTAAAAC", rec.ImmediateOriginRoutingNumber);
-            Assert.Equal("YYYYMMDD", rec.FileCreationDate);
-            Assert.Equal("HHmm", rec.FileCreationTime);
-            Assert.Equal("N", rec.ResendIndicator);
-            Assert.Equal("ABCDEFGHIJKLMNOPQR", rec.ImmediateDestinationName);
-            Assert.Equal("ABCDEFGHIJKLMNOPQR", rec.ImmediateOriginName);
-            Assert.Equal("A", rec.FileIdModifier);
-            Assert.Equal("  ", rec.CountryCode);
-            Assert.Equal("CR61", rec.UserField);
-            Assert.Equal(" ", rec.Reserved);
-        }
-
-        [Fact]
-        public void TestMeta_ExpectedStringValuesForR10()
-        {
-            // Arrange
-            var key = new Record("CashLetterHeaderRecord", "10");
-            const int length = 80;
-            var record = Builder.GetObjectFor(key);
-
-            // Act
-            var str = Builder.GetTestStringFor(key);
-            record.SetData(str);
-            var rec = record as R10;
-
-            // Assert
-            Assert.NotNull(rec);
-            Assert.Equal(length, str.Length);
-            Assert.Equal("10", rec.RecordType);
-            Assert.Equal("01", rec.CollectionTypeIndicator);
-            Assert.Equal("TTTTAAAAC", rec.DestinationRoutingNumber);
-            Assert.Equal("TTTTAAAAC", rec.ECEInstitutionRoutingNumber);
-            Assert.Equal("YYYYMMDD", rec.CashLetterBusinessDate);
-            Assert.Equal("YYYYMMDD", rec.CashLetterCreationDate);
-            Assert.Equal("HHmm", rec.CashLetterCreationTime);
-            Assert.Equal("I", rec.CashLetterRecordTypeIndicator);
-            Assert.Equal("G", rec.CashLetterDocumentationTypeIndicator);
-            Assert.Equal("A1B2C3D4", rec.CashLetterId);
-            Assert.Equal("6Z-5Y-4X-3W-2V", rec.OriginatorContactName);
-            Assert.Equal("1234567890", rec.OriginatorContactPhoneNumber);
-            Assert.Equal("  ", rec.UserField);
-            Assert.Equal(" ", rec.User);
-        }
-
-        [Fact]
-        public void TestMeta_ExpectedStringValuesForR20()
-        {
-            // Arrange
-            var key = new Record("BatchHeaderRecord", "20");
-            const int length = 80;
-            var record = Builder.GetObjectFor(key);
-
-            // Act
-            var str = Builder.GetTestStringFor(key);
-            record.SetData(str);
-            var rec = record as R20;
-
-            // Assert
-            Assert.NotNull(rec);
-            Assert.Equal(length, str.Length);
-            Assert.Equal("20", rec.RecordType);
-            Assert.Equal("01", rec.CollectionTypeIndicator);
-            Assert.Equal("TTTTAAAAC", rec.DestinationRoutingNumber);
-            Assert.Equal("TTTTAAAAC", rec.ECEInstitutionRoutingNumber);
-            Assert.Equal("YYYYMMDD", rec.BatchBusinessDate);
-            Assert.Equal("YYYYMMDD", rec.BatchCreationDate);
-            Assert.Equal("          ", rec.BatchId);
-            Assert.Equal("4242", rec.BatchSequenceNumber);
-            Assert.Equal("  ", rec.CycleNumber);
-            Assert.Equal("TTTTAAAAC", rec.ReturnLocationRoutingNumber);
-            Assert.Equal("     ", rec.UserField);
-            Assert.Equal("            ", rec.Reserved);
+            // Act, Assert
+            foreach (var field in meta)
+            {
+                Assert.Matches(@"^[M|C|O]$", field.Usage);
+            }
         }
     }
 }
