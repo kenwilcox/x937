@@ -41,9 +41,10 @@ namespace x937
                 {new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields()},
                 {new Record("ImageViewDetailRecord", "50"), BuildT50Fields()},
                 {new Record("ImageViewDataRecord", "52"), BuildT52Fields()},
-                {new Record("CreditDetailRecord", "61"), BuildT61Fields() },
-                {new Record("BatchControlRecord", "70"), BuildT70Fields() },
-                {new Record("CashLetterControlRecord", "90"), BuildT90Fields() }
+                {new Record("CreditDetailRecord", "61"), BuildT61Fields()},
+                {new Record("BatchControlRecord", "70"), BuildT70Fields()},
+                {new Record("CashLetterControlRecord", "90"), BuildT90Fields()},
+                {new Record("FileControlRecord", "99"), BuildT99Fields()}
             };
 
             return meta;
@@ -64,6 +65,7 @@ namespace x937
                 case "61": ret = new R61(); break;
                 case "70": ret = new R70(); break;
                 case "90": ret = new R90(); break;
+                case "99": ret = new R99(); break;
                 default: ret = new Unknown(); break;
             }
             return ret;
@@ -402,6 +404,22 @@ namespace x937
                 new Field {Order = 6, FieldName = "CustomerName", Usage = "C", DocPosition = new Range(40, 57), Type = "A", Value = "x", ValueType = ValueType.Undefined},
                 new Field {Order = 7, FieldName = "CreditDate", Usage = "C", DocPosition = new Range(58, 65), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
                 new Field {Order = 8, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+            };
+            return fields;
+        }
+
+        private static List<Field> BuildT99Fields()
+        {
+            var fields = new List<Field>
+            {
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "99", ValueType = ValueType.Literal},
+                new Field {Order = 2, FieldName = "CashLetterCount", Usage = "M", DocPosition = new Range(3, 8), Type = "N", Value = "", ValueType = ValueType.Undefined},
+                new Field {Order = 3, FieldName = "TotalRecordCount", Usage = "M", DocPosition = new Range(9, 16), Type = "N", Value = "", ValueType = ValueType.Undefined},
+                new Field {Order = 4, FieldName = "TotalItemCount", Usage = "M", DocPosition = new Range(17, 24), Type = "N", Value = "", ValueType = ValueType.Undefined},
+                new Field {Order = 5, FieldName = "FileTotalAmount", Usage = "M", DocPosition = new Range(25, 40), Type = "N", Value = "", ValueType = ValueType.Undefined},
+                new Field {Order = 6, FieldName = "ImmediateOriginContactName", Usage = "C", DocPosition = new Range(41, 54), Type = "ANS", Value = "99", ValueType = ValueType.Undefined},
+                new Field {Order = 7, FieldName = "ImmediateOriginContactPhoneNumber", Usage = "C", DocPosition = new Range(55, 64), Type = "N", Value = "99", ValueType = ValueType.Undefined},
+                new Field {Order = 8, FieldName = "Reserved", Usage = "M", DocPosition = new Range(65, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
             };
             return fields;
         }

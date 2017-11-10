@@ -21,6 +21,7 @@ namespace x937
                 case "61": ret = new R61(); break;
                 case "70": ret = new R70(); break;
                 case "90": ret = new R90(); break;
+                case "99": ret = new R99(); break;
                 default: ret = new Unknown(); break;
             }
 
@@ -396,6 +397,30 @@ namespace x937
         public string ImagesWithinCashLetterCount { get; set; }
         public string CustomerName { get; set; }
         public string CreditDate { get; set; }
+        public string Reserved { get; set; }
+    }
+
+    public class R99: X9Record
+    {
+        public override void SetData(string data, byte[] optional = null)
+        {
+            base.SetData(data, optional);
+            Debug.WriteLine("R99 SetData() called");
+            CashLetterCount = Data.Substring(2, 6);
+            TotalRecordCount = Data.Substring(8, 8);
+            TotalItemCount = Data.Substring(16, 8);
+            FileTotalAmount = Data.Substring(24, 16);
+            ImmediateOriginContactName = Data.Substring(40, 14);
+            ImmediateOriginContactPhoneNumber = Data.Substring(54, 10);
+            Reserved = Data.Substring(64, 16);
+        }
+
+        public string CashLetterCount { get; set; }
+        public string TotalRecordCount { get; set; }
+        public string TotalItemCount { get; set; }
+        public string FileTotalAmount { get; set; }
+        public string ImmediateOriginContactName { get; set; }
+        public string ImmediateOriginContactPhoneNumber { get; set; }
         public string Reserved { get; set; }
     }
 }

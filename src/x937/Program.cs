@@ -444,7 +444,8 @@ namespace x937
             foreach (X9Rec item in records)
             {
                 var rec = Translator.Translate(item);
-                if (rec is Unknown) continue;
+                //if (rec is Unknown) continue;
+                if (rec is Unknown) throw new Exception($"Missing Translation for {item.RecType}");
                 var type = rec.GetType();
                 Console.WriteLine($"Received: {type}");
                 foreach (var prop in type.GetProperties())
