@@ -40,7 +40,8 @@ namespace x937
                 {new Record("CheckDetailRecord", "25"), BuildT25Fields()},
                 {new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields()},
                 {new Record("ImageViewDetailRecord", "50"), BuildT50Fields()},
-                {new Record("ImageViewDataRecord", "52"), BuildT52Fields()}
+                {new Record("ImageViewDataRecord", "52"), BuildT52Fields()},
+                {new Record("CreditDetailRecord", "61"), BuildT61Fields() }
             };
 
             return meta;
@@ -58,6 +59,7 @@ namespace x937
                 case "26": ret = new R26(); break;
                 case "50": ret = new R50(); break;
                 case "52": ret = new R52(); break;
+                case "61": ret = new R61(); break;
                 default: ret = new Unknown(); break;
             }
             return ret;
@@ -343,6 +345,27 @@ namespace x937
                 new Field {Order = 16, FieldName = "LengthOfImageData", Usage = "M", DocPosition = new Range(111, 117), Type = "N", Value = "", ValueType = ValueType.Length},
                 // This is from start position to the end... what ever that may be
                 new Field {Order = 17, FieldName = "ImageData", Usage = "M", DocPosition = new Range(118, Utils.EndOfString), Type = "Binary", Value = "", ValueType = ValueType.Binary},
+            };
+            return fields;
+        }
+
+        private static List<Field> BuildT61Fields()
+        {
+            var fields = new List<Field>
+            {
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "61", ValueType = ValueType.Literal},
+                new Field {Order = 2, FieldName = "AuxiliaryOnUs", Usage = "M", DocPosition = new Range(3, 17), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
+                new Field {Order = 3, FieldName = "ExternalProcessingCode", Usage = "C", DocPosition = new Range(18, 18), Type = "ANS", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 4, FieldName = "PayorBankRoutingNumber", Usage = "M", DocPosition = new Range(19, 27), Type = "N", Value = "522000410", ValueType = ValueType.Literal},
+                new Field {Order = 5, FieldName = "CreditAccountNumberOnUs", Usage = "C", DocPosition = new Range(28, 47), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
+                new Field {Order = 6, FieldName = "ItemAccount", Usage = "M", DocPosition = new Range(48, 57), Type = "N", Value = "9999999999", ValueType = ValueType.Literal},
+                new Field {Order = 7, FieldName = "ECEInstitutionItemNumber", Usage = "M", DocPosition = new Range(58, 72), Type = "NB", Value = "", ValueType = ValueType.Sequence},
+                new Field {Order = 8, FieldName = "DocumentationTypeIndicator", Usage = "C", DocPosition = new Range(73, 73), Type = "AN", Value = "*", ValueType = ValueType.Blank},
+                new Field {Order = 9, FieldName = "TypeOfAccountCode", Usage = "C", DocPosition = new Range(74, 74), Type = "AN", Value = "-", ValueType = ValueType.Blank},
+                new Field {Order = 10, FieldName = "SourceOfWorkCode", Usage = "C", DocPosition = new Range(75, 75), Type = "AN", Value = "^", ValueType = ValueType.Blank},
+                new Field {Order = 11, FieldName = "WorkType", Usage = "C", DocPosition = new Range(76, 76), Type = "AN", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 12, FieldName = "DebitCreditIndicator", Usage = "C", DocPosition = new Range(77, 77), Type = "AN", Value = "#", ValueType = ValueType.Blank},
+                new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "*", ValueType = ValueType.Blank},
             };
             return fields;
         }

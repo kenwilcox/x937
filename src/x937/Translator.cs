@@ -18,6 +18,7 @@ namespace x937
                 case "26": ret = new R26(); break;
                 case "50": ret = new R50(); break;
                 case "52": dataLength = 117; ret = new R52(); break;
+                case "61": ret = new R61(); break;
                 default: ret = new Unknown(); break;
             }
 
@@ -314,5 +315,39 @@ namespace x937
         public string LengthOfDigitalSignature { get; set; }
         public string LengthOfImageData { get; set; }
         public byte[] ImageData { get; set; }
+    }
+
+    public class R61: X9Record
+    {
+        public override void SetData(string data, byte[] optional = null)
+        {
+            base.SetData(data, optional);
+            Debug.WriteLine("R61 SetData() called");
+            AuxiliaryOnUs = Data.Substring(2, 15);
+            ExternalProcessingCode = Data.Substring(17, 1);
+            PayorBankRoutingNumber = Data.Substring(18, 9);
+            CreditAccountNumberOnUs = Data.Substring(27, 20);
+            ItemAccount = Data.Substring(47, 10);
+            ECEInstitutionItemNumber = Data.Substring(57, 15);
+            DocumentationTypeIndicator = Data.Substring(72, 1);
+            TypeOfAccountCode = Data.Substring(73, 1);
+            SourceOfWorkCode = Data.Substring(74, 1);
+            WorkType = Data.Substring(75, 1);
+            DebitCreditIndicator = Data.Substring(76, 1);
+            Reserved = Data.Substring(77, 3);
+        }
+
+        public string AuxiliaryOnUs { get; set; }
+        public string ExternalProcessingCode { get; set; }
+        public string PayorBankRoutingNumber { get; set; }
+        public string CreditAccountNumberOnUs { get; set; }
+        public string ItemAccount { get; set; }
+        public string ECEInstitutionItemNumber { get; set; }
+        public string DocumentationTypeIndicator { get; set; }
+        public string TypeOfAccountCode { get; set; }
+        public string SourceOfWorkCode { get; set; }
+        public string WorkType { get; set; }
+        public string DebitCreditIndicator { get; set; }
+        public string Reserved { get; set; }
     }
 }
