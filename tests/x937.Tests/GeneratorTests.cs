@@ -16,6 +16,7 @@ namespace x937.Tests
         [InlineData("ImageViewDetailRecord", "50")]
         [InlineData("ImageViewDataRecord", "52")]
         [InlineData("CreditDetailRecord", "61")]
+        [InlineData("BatchControlRecord", "70")]
         public void TestThatGenerate_ReturnsExpectedCode(string recordName, string recordType)
         {
             // Arrange

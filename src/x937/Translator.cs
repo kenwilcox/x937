@@ -19,6 +19,7 @@ namespace x937
                 case "50": ret = new R50(); break;
                 case "52": dataLength = 117; ret = new R52(); break;
                 case "61": ret = new R61(); break;
+                case "70": ret = new R70(); break;
                 default: ret = new Unknown(); break;
             }
 
@@ -348,6 +349,28 @@ namespace x937
         public string SourceOfWorkCode { get; set; }
         public string WorkType { get; set; }
         public string DebitCreditIndicator { get; set; }
+        public string Reserved { get; set; }
+    }
+
+    public class R70: X9Record
+    {
+        public override void SetData(string data, byte[] optional = null)
+        {
+            base.SetData(data, optional);
+            Debug.WriteLine("R70 SetData() called");
+            ItemsWithinBatchCount = Data.Substring(2, 4);
+            BatchTotalAmount = Data.Substring(6, 12);
+            MICRValidTotalAmount = Data.Substring(18, 12);
+            ImagesWithinBatchCount = Data.Substring(30, 5);
+            UserField = Data.Substring(35, 20);
+            Reserved = Data.Substring(55, 25);
+        }
+
+        public string ItemsWithinBatchCount { get; set; }
+        public string BatchTotalAmount { get; set; }
+        public string MICRValidTotalAmount { get; set; }
+        public string ImagesWithinBatchCount { get; set; }
+        public string UserField { get; set; }
         public string Reserved { get; set; }
     }
 }

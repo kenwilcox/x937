@@ -41,7 +41,8 @@ namespace x937
                 {new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields()},
                 {new Record("ImageViewDetailRecord", "50"), BuildT50Fields()},
                 {new Record("ImageViewDataRecord", "52"), BuildT52Fields()},
-                {new Record("CreditDetailRecord", "61"), BuildT61Fields() }
+                {new Record("CreditDetailRecord", "61"), BuildT61Fields() },
+                {new Record("BatchControlRecord", "70"), BuildT70Fields() }
             };
 
             return meta;
@@ -60,6 +61,7 @@ namespace x937
                 case "50": ret = new R50(); break;
                 case "52": ret = new R52(); break;
                 case "61": ret = new R61(); break;
+                case "70": ret = new R70(); break;
                 default: ret = new Unknown(); break;
             }
             return ret;
@@ -366,6 +368,21 @@ namespace x937
                 new Field {Order = 11, FieldName = "WorkType", Usage = "C", DocPosition = new Range(76, 76), Type = "AN", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 12, FieldName = "DebitCreditIndicator", Usage = "C", DocPosition = new Range(77, 77), Type = "AN", Value = "#", ValueType = ValueType.Blank},
                 new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "*", ValueType = ValueType.Blank},
+            };
+            return fields;
+        }
+
+        private static List<Field> BuildT70Fields()
+        {
+            var fields = new List<Field>
+            {
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "70", ValueType = ValueType.Literal},
+                new Field {Order = 2, FieldName = "ItemsWithinBatchCount", Usage = "M", DocPosition = new Range(3, 6), Type = "N", Value = "0000", ValueType = ValueType.Literal},
+                new Field {Order = 3, FieldName = "BatchTotalAmount", Usage = "M", DocPosition = new Range(7, 18), Type = "N", Value = "xxxxxxxxxxxx", ValueType = ValueType.Literal},
+                new Field {Order = 4, FieldName = "MICRValidTotalAmount", Usage = "C", DocPosition = new Range(19, 30), Type = "N", Value = "9", ValueType = ValueType.Blank},
+                new Field {Order = 5, FieldName = "ImagesWithinBatchCount", Usage = "C", DocPosition = new Range(31, 35), Type = "N", Value = "-", ValueType = ValueType.Blank},
+                new Field {Order = 6, FieldName = "UserField", Usage = "C", DocPosition = new Range(36, 55), Type = "ANS", Value = "*", ValueType = ValueType.Blank},
+                new Field {Order = 7, FieldName = "Reserved", Usage = "M", DocPosition = new Range(56, 80), Type = "B", Value = "#", ValueType = ValueType.Blank},
             };
             return fields;
         }
