@@ -17,12 +17,13 @@ namespace x937
                 case "25": ret = new R25(); break;
                 case "26": ret = new R26(); break;
                 case "50": ret = new R50(); break;
+                case "52": dataLength = 117; ret = new R52(); break;
                 default: ret = new Unknown(); break;
             }
 
             var recLen = item.RecData.Length;
             if (!(ret is Unknown) && dataLength != recLen) throw new Exception($"Record defined as {item.RecType} requires a length of {dataLength} but was {recLen}");
-            ret.SetData(item.RecData);
+            ret.SetData(item.RecData, item.ImageData);
             if (ret.RecordType != item.RecType) throw new Exception("I didn't get what I expected");
             return ret;
         }
@@ -30,14 +31,14 @@ namespace x937
 
     public interface IX9Record
     {
-        void SetData(string data);
+        void SetData(string data, byte[] optional = null);
         string RecordType { get; }
     }
 
     public abstract class X9Record: IX9Record
     {
         protected string Data;
-        public virtual void SetData(string data)
+        public virtual void SetData(string data, byte[] optional = null)
         {
             // I only want SetData being called once
             // It's no big deal if it's called again
@@ -55,9 +56,9 @@ namespace x937
 
     public class R01 : X9Record
     {
-        public override void SetData(string data)
+        public override void SetData(string data, byte[] optional = null)
         {
-            base.SetData(data);
+            base.SetData(data, optional);
             Debug.WriteLine("R01 SetData() called");
             StandardLevel = Data.Substring(2, 2);
             TestFileIndicator = Data.Substring(4, 1);
@@ -91,9 +92,9 @@ namespace x937
 
     public class R10: X9Record
     {
-        public override void SetData(string data)
+        public override void SetData(string data, byte[] optional = null)
         {
-            base.SetData(data);
+            base.SetData(data, optional);
             Debug.WriteLine("R10 SetData() called");
             CollectionTypeIndicator = Data.Substring(2, 2);
             DestinationRoutingNumber = Data.Substring(4, 9);
@@ -129,9 +130,9 @@ namespace x937
 
     public class R20: X9Record
     {
-        public override void SetData(string data)
+        public override void SetData(string data, byte[] optional = null)
         {
-            base.SetData(data);
+            base.SetData(data, optional);
             Debug.WriteLine("R20 SetData() called");
             CollectionTypeIndicator = Data.Substring(2, 2);
             DestinationRoutingNumber = Data.Substring(4, 9);
@@ -161,9 +162,9 @@ namespace x937
 
     public class R25: X9Record
     {
-        public override void SetData(string data)
+        public override void SetData(string data, byte[] optional = null)
         {
-            base.SetData(data);
+            base.SetData(data, optional);
             Debug.WriteLine("R25 SetData() called");
             AuxiliaryOnUs = Data.Substring(2, 15);
             ExternalProcessingCode = Data.Substring(17, 1);
@@ -199,9 +200,9 @@ namespace x937
 
     public class R26: X9Record
     {
-        public override void SetData(string data)
+        public override void SetData(string data, byte[] optional = null)
         {
-            base.SetData(data);
+            base.SetData(data, optional);
             Debug.WriteLine("R26 SetData() called");
             CheckDetailAddendumARecordNumber = Data.Substring(2, 1);
             BOFDRoutingNumber = Data.Substring(3, 9);
@@ -233,9 +234,9 @@ namespace x937
 
     public class R50: X9Record
     {
-        public override void SetData(string data)
+        public override void SetData(string data, byte[] optional = null)
         {
-            base.SetData(data);
+            base.SetData(data, optional);
             Debug.WriteLine("R50 SetData() called");
             ImageIndicator = Data.Substring(2, 1);
             ImageCreatorRoutingNumber = Data.Substring(3, 9);
@@ -271,5 +272,47 @@ namespace x937
         public string ImageRecreateIndicator { get; set; }
         public string UserField { get; set; }
         public string Reserved { get; set; }
+    }
+
+    public class R52: X9Record
+    {
+        public override void SetData(string data, byte[] optional = null)
+        {
+            base.SetData(data, optional);
+            Debug.WriteLine("R52 SetData() called");
+            ECEInstitutionRoutingNumber = Data.Substring(2, 9);
+            BatchBusinessDate = Data.Substring(11, 8);
+            CycleNumber = Data.Substring(19, 2);
+            ECEInstitutionItemSequenceNumber = Data.Substring(21, 15);
+            SecurityOriginatorName = Data.Substring(36, 16);
+            SecurityAuthenticator = Data.Substring(52, 16);
+            SecurityKeyName = Data.Substring(68, 16);
+            ClippingOrigin = Data.Substring(84, 1);
+            ClippingCoordinateH1 = Data.Substring(85, 4);
+            ClippingCoordinateH2 = Data.Substring(89, 4);
+            ClippingCoordinateV1 = Data.Substring(93, 4);
+            ClippingCoordinateV2 = Data.Substring(97, 4);
+            LengthOfImageReferenceKey = Data.Substring(101, 4);
+            LengthOfDigitalSignature = Data.Substring(105, 5);
+            LengthOfImageData = Data.Substring(110, 7);
+            ImageData = optional;
+        }
+
+        public string ECEInstitutionRoutingNumber { get; set; }
+        public string BatchBusinessDate { get; set; }
+        public string CycleNumber { get; set; }
+        public string ECEInstitutionItemSequenceNumber { get; set; }
+        public string SecurityOriginatorName { get; set; }
+        public string SecurityAuthenticator { get; set; }
+        public string SecurityKeyName { get; set; }
+        public string ClippingOrigin { get; set; }
+        public string ClippingCoordinateH1 { get; set; }
+        public string ClippingCoordinateH2 { get; set; }
+        public string ClippingCoordinateV1 { get; set; }
+        public string ClippingCoordinateV2 { get; set; }
+        public string LengthOfImageReferenceKey { get; set; }
+        public string LengthOfDigitalSignature { get; set; }
+        public string LengthOfImageData { get; set; }
+        public byte[] ImageData { get; set; }
     }
 }

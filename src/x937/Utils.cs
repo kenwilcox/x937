@@ -5,6 +5,8 @@ namespace x937
 {
     public static class Utils
     {
+        public const int EndOfString = -1;
+
         public static string CreateIndent(int depth)
         {
             var sb = new StringBuilder();

@@ -14,6 +14,7 @@ namespace x937.Tests
         [InlineData("CheckDetailRecord", "25")]
         [InlineData("CheckDetailAddendumARecord", "26")]
         [InlineData("ImageViewDetailRecord", "50")]
+        [InlineData("ImageViewDataRecord", "52")]
         public void TestThatGenerate_ReturnsExpectedCode(string recordName, string recordType)
         {
             // Arrange
@@ -29,10 +30,21 @@ namespace x937.Tests
                 if (field.FieldName == "RecordType") continue; // base class, all have it
 
                 // Set Data bits
-                Assert.Contains($"{field.FieldName} = Data.Substring({field.Position.Start}, {field.Size})", code);
+                if (field.ValueType != ValueType.Binary)
+                {
+                    Assert.Contains($"{field.FieldName} = Data.Substring({field.Position.Start}, {field.Size})", code);
+                }
+                else
+                {
+                    //, Data.Length
+                    Assert.Contains($"{field.FieldName} = optional;", code);
+                }
+
 
                 // Property bits
-                Assert.Contains($"public string {field.FieldName} {{ get; set; }}", code);
+                var fieldType = "string";
+                if (field.ValueType == ValueType.Binary) fieldType = "byte[]";
+                Assert.Contains($"public {fieldType} {field.FieldName} {{ get; set; }}", code);
             }
         }
     }

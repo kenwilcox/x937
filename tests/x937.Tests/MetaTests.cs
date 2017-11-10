@@ -19,6 +19,7 @@ namespace x937.Tests
         [InlineData("CheckDetailRecord", "25", 80)]
         [InlineData("CheckDetailAddendumARecord", "26", 80)]
         [InlineData("ImageViewDetailRecord", "50", 80)]
+        [InlineData("ImageViewDataRecord", "52", 117)]
         public void TestMeta_ObjectFieldLength(string recordName, string recordType, int expectedLength)
         {
             // Arrange
@@ -27,7 +28,7 @@ namespace x937.Tests
             var record = Builder.GetObjectFor(key);
 
             // Act
-            var size = meta.Sum(x => x.Size);
+            var size = meta.Where(x =>x.ValueType != ValueType.Binary).Sum(x => x.Size);
             var props = record.GetType().GetProperties().Select(x => x.Name).ToList();
             var mprops = meta.Select(x => x.FieldName).ToList();
             mprops.Sort();
@@ -50,6 +51,7 @@ namespace x937.Tests
         [InlineData("CheckDetailRecord", "25", 80)]
         [InlineData("CheckDetailAddendumARecord", "26", 80)]
         [InlineData("ImageViewDetailRecord", "50", 80)]
+        [InlineData("ImageViewDataRecord", "52", 117)]
         public void TestMeta_MetaFieldCount(string recordName, string recordType, int expectedCount)
         {
             // Arrange
@@ -59,6 +61,7 @@ namespace x937.Tests
             var list = new List<int>();
             foreach (var field in meta)
             {
+                if (field.ValueType == ValueType.Binary) continue;
                 var start = field.Position.Start;
                 var end = field.Position.End;
                 for (var i = start; i < end; i++)
@@ -81,6 +84,7 @@ namespace x937.Tests
         [InlineData("CheckDetailRecord", "25", 15)]
         [InlineData("CheckDetailAddendumARecord", "26", 13)]
         [InlineData("ImageViewDetailRecord", "50", 17)]
+        [InlineData("ImageViewDataRecord", "52", 17)]
         public void TestMeta_MetaFieldCounts(string recordName, string recordType, int fieldCount)
         {
             // Arrange, Act
@@ -96,6 +100,7 @@ namespace x937.Tests
         [InlineData("CheckDetailRecord", "25", 15)]
         [InlineData("CheckDetailAddendumARecord", "26", 13)]
         [InlineData("ImageViewDetailRecord", "50", 17)]
+        [InlineData("ImageViewDataRecord", "52", 17)]
         public void TestMeta_MetaFieldNumbers(string recordName, string recordType, int fieldCount)
         {
             // Arrange
@@ -120,6 +125,7 @@ namespace x937.Tests
         [InlineData("CheckDetailRecord", "25")]
         [InlineData("CheckDetailAddendumARecord", "26")]
         [InlineData("ImageViewDetailRecord", "50")]
+        [InlineData("ImageViewDataRecord", "52")]
         public void TestMeta_ContainsValidUsage(string recordName, string recordType)
         {
             // Arrange

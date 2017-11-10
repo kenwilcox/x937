@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace x937
@@ -33,12 +34,13 @@ namespace x937
         {
             var meta = new Meta
             {
-                { new Record("FileHeaderRecord", "01"), BuildT01Fields() },
-                { new Record("CashLetterHeaderRecord", "10"), BuildT10Fields() },
-                { new Record("BatchHeaderRecord", "20"), BuildT20Fields() },
-                { new Record("CheckDetailRecord", "25"), BuildT25Fields() },
-                { new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields() },
-                { new Record("ImageViewDetailRecord", "50"), BuildT50Fields() }
+                {new Record("FileHeaderRecord", "01"), BuildT01Fields()},
+                {new Record("CashLetterHeaderRecord", "10"), BuildT10Fields()},
+                {new Record("BatchHeaderRecord", "20"), BuildT20Fields()},
+                {new Record("CheckDetailRecord", "25"), BuildT25Fields()},
+                {new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields()},
+                {new Record("ImageViewDetailRecord", "50"), BuildT50Fields()},
+                {new Record("ImageViewDataRecord", "52"), BuildT52Fields()}
             };
 
             return meta;
@@ -55,6 +57,7 @@ namespace x937
                 case "25": ret = new R25(); break;
                 case "26": ret = new R26(); break;
                 case "50": ret = new R50(); break;
+                case "52": ret = new R52(); break;
                 default: ret = new Unknown(); break;
             }
             return ret;
@@ -64,6 +67,8 @@ namespace x937
         {
             var meta = GetMeta()[record];
             var sb = new StringBuilder();
+            var previousType = ValueType.Literal;
+            var binary = string.Empty;
             foreach (var field in meta)
             {
                 var length = sb.Length;
@@ -75,19 +80,42 @@ namespace x937
                     case ValueType.Date: sb.Append(field.Size == 8 ? "YYYYMMDD" : "HHmm");break;
                     case ValueType.Logical: sb.Append(GetLogical(field.Value, field.Size)); break;
                     case ValueType.Cr61: sb.Append("CR61");break; // CR61 is len(4)
-                    case ValueType.Blank: sb.Append(GetBlank(field.Size)); break;
+                    case ValueType.Blank: sb.Append(GetBlank(field.Size, field.Value)); break;
                     case ValueType.Undefined: sb.Append(GetUndefined(field.Type, field.Size)); break;
                         // TODO update these with better test values
                     case ValueType.NBSM: sb.Append(GetRepeating('x', field.Size)); break;
                     case ValueType.NBSMOS: sb.Append(GetRepeating('z', field.Size));break;
                     case ValueType.LeadingZeros: sb.Append(GetUndefined(field.Type, field.Size)); break;
                     case ValueType.Sequence: sb.Append(GetUndefined(field.Type, field.Size));break;
+                    case ValueType.Length:
+                        binary = GetRandomData(Rnd.Next(2048, 65536)); // 2 - 64KB
+                        sb.Append(binary.Length.ToString().PadLeft(field.Size));
+                        break;
+                    case ValueType.Binary:
+                        if (previousType == ValueType.Length) sb.Append(binary);
+                        else throw new Exception("ValueType Binary used before ValueType Length");
+                        break;
                     default: throw new Exception($"No processor for {field.ValueType}");
                 }
-                if (sb.Length != length + field.Size) throw new Exception($"Field {field.FieldName} generated a size of {sb.Length - length}, but it should have been {field.Size}");
+                if (field.ValueType != ValueType.Binary)
+                {
+                    if (sb.Length != length + field.Size) throw new Exception($"Field {field.FieldName} generated a size of {sb.Length - length}, but it should have been {field.Size}");
+                }
+                else
+                {
+                    if (sb.Length != length + binary.Length) throw new Exception($"Field {field.FieldName} should have been {binary.Length}");
+                }
+                previousType = field.ValueType;
             }
 
             return sb.ToString();
+        }
+
+        public static string GetRandomData(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-1234567890abcdefghijklmnopqrstuvwxyz";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[Rnd.Next(s.Length)]).ToArray());
         }
 
         public static string GetClassFor(Record record)
@@ -95,13 +123,24 @@ namespace x937
             var meta = GetMeta()[record];
             var sb = new StringBuilder();
             var props = new StringBuilder();
-            sb.Append($"public class R{record.TypeId}: X9Record\n{{\n    public override void SetData(string data)\n    {{\n        base.SetData(data);\n");
+            sb.Append($"public class R{record.TypeId}: X9Record\n{{\n    public override void SetData(string data, byte[] optional = null)\n    {{\n        base.SetData(data, optional);\n");
             sb.Append($"        Debug.WriteLine(\"R{record.TypeId} SetData() called\");\n");
             foreach (var field in meta)
             {
                 if (field.FieldName == "RecordType") continue; // part of base class, everyone has this
-                props.Append($"    public string {field.FieldName} {{ get; set; }}\n");
-                sb.Append($"        {field.FieldName} = Data.Substring({field.Position.Start}, {field.Size});\n");
+
+                var fieldType = "string";
+                if (field.ValueType == ValueType.Binary) fieldType = "byte[]";
+                props.Append($"    public {fieldType} {field.FieldName} {{ get; set; }}\n");
+                if (field.ValueType != ValueType.Binary)
+                {
+                    sb.Append($"        {field.FieldName} = Data.Substring({field.Position.Start}, {field.Size});\n");
+                }
+                else
+                {
+                    //, Data.Length
+                    sb.Append($"        {field.FieldName} = optional;\n");
+                }
             }
             sb.Append("    }\n\n");
             sb.Append(props);
@@ -116,9 +155,11 @@ namespace x937
             return parts[idx].PadLeft(size, ' ');
         }
 
-        private static string GetBlank(int size)
+        private static string GetBlank(int size, string repeatingChar = "")
         {
-            return "".PadLeft(size, '-'); // Dashes are easier to see
+            var repeat = '-'; // Dashes are easier to see
+            if (repeatingChar != string.Empty) repeat = repeatingChar[0];
+            return "".PadLeft(size, repeat);
         }
 
         private static string GetRepeating(char character, int size)
@@ -199,7 +240,7 @@ namespace x937
                 new Field {Order = 9, FieldName = "CycleNumber", Usage = "C", DocPosition = new Range(53, 54), Type = "AN", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 10, FieldName = "ReturnLocationRoutingNumber", Usage = "C", DocPosition = new Range(55, 63), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
                 new Field {Order = 11, FieldName = "UserField", Usage = "M", DocPosition = new Range(64, 68), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 12, FieldName = "Reserved", Usage = "M", DocPosition = new Range(69, 80), Type = "B", Value = "10", ValueType = ValueType.Blank},
+                new Field {Order = 12, FieldName = "Reserved", Usage = "M", DocPosition = new Range(69, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
             };
             return fields;
         }
@@ -237,7 +278,7 @@ namespace x937
                 new Field {Order = 3, FieldName = "BOFDRoutingNumber", Usage = "C", DocPosition = new Range(4, 12), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
                 new Field {Order = 4, FieldName = "BOFDBusinessDate", Usage = "C", DocPosition = new Range(13, 20), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
                 new Field {Order = 5, FieldName = "BOFDItemSequenceNumber", Usage = "C", DocPosition = new Range(21, 35), Type = "NB", Value = "", ValueType = ValueType.Sequence},
-                new Field {Order = 6, FieldName = "BOFDDepositAccountNumber", Usage = "C", DocPosition = new Range(36, 53), Type = "ANS", Value = "YYYYMMDD", ValueType = ValueType.Blank},
+                new Field {Order = 6, FieldName = "BOFDDepositAccountNumber", Usage = "C", DocPosition = new Range(36, 53), Type = "ANS", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 7, FieldName = "BOFDDepositBranch", Usage = "C", DocPosition = new Range(54, 58), Type = "ANS", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 8, FieldName = "PayeeName", Usage = "C", DocPosition = new Range(59, 73), Type = "ANS", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 9, FieldName = "TruncationIndicator", Usage = "C", DocPosition = new Range(74, 74), Type = "A", Value = "Y", ValueType = ValueType.Literal},
@@ -269,7 +310,39 @@ namespace x937
                 new Field {Order = 14, FieldName = "LengthOfProtectedData", Usage = "C", DocPosition = new Range(50, 56), Type = "N", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 15, FieldName = "ImageRecreateIndicator", Usage = "C", DocPosition = new Range(57, 57), Type = "N", Value = "", ValueType = ValueType.Blank},
                 new Field {Order = 16, FieldName = "UserField", Usage = "C", DocPosition = new Range(58, 65), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 17, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "26", ValueType = ValueType.Blank},
+                new Field {Order = 17, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+            };
+            return fields;
+        }
+
+        private static List<Field> BuildT52Fields()
+        {
+            var fields = new List<Field>
+            {
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "52", ValueType = ValueType.Literal},
+                new Field {Order = 2, FieldName = "ECEInstitutionRoutingNumber", Usage = "M", DocPosition = new Range(3, 11), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
+                new Field {Order = 3, FieldName = "BatchBusinessDate", Usage = "M", DocPosition = new Range(12, 19), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
+                new Field {Order = 4, FieldName = "CycleNumber", Usage = "M", DocPosition = new Range(20, 21), Type = "AN", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 5, FieldName = "ECEInstitutionItemSequenceNumber", Usage = "M", DocPosition = new Range(22, 36), Type = "NB", Value = "", ValueType = ValueType.Sequence},
+                new Field {Order = 6, FieldName = "SecurityOriginatorName", Usage = "C", DocPosition = new Range(37, 52), Type = "ANS", Value = "x", ValueType = ValueType.Blank},
+                new Field {Order = 7, FieldName = "SecurityAuthenticator", Usage = "C", DocPosition = new Range(53, 68), Type = "ANS", Value = "v", ValueType = ValueType.Blank},
+                new Field {Order = 8, FieldName = "SecurityKeyName", Usage = "C", DocPosition = new Range(69, 84), Type = "ANS", Value = "*", ValueType = ValueType.Blank},
+
+                new Field {Order = 9, FieldName = "ClippingOrigin", Usage = "M", DocPosition = new Range(85, 85), Type = "NB", Value = "0", ValueType = ValueType.Literal},
+                new Field {Order = 10, FieldName = "ClippingCoordinateH1", Usage = "C", DocPosition = new Range(86, 89), Type = "N", Value = "#", ValueType = ValueType.Blank},
+                new Field {Order = 11, FieldName = "ClippingCoordinateH2", Usage = "C", DocPosition = new Range(90, 93), Type = "N", Value = "^", ValueType = ValueType.Blank},
+                new Field {Order = 12, FieldName = "ClippingCoordinateV1", Usage = "C", DocPosition = new Range(94, 97), Type = "N", Value = "x", ValueType = ValueType.Blank},
+                new Field {Order = 13, FieldName = "ClippingCoordinateV2", Usage = "C", DocPosition = new Range(98, 101), Type = "N", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 14, FieldName = "LengthOfImageReferenceKey", Usage = "M", DocPosition = new Range(102, 105), Type = "NB", Value = "0000", ValueType = ValueType.Literal},
+
+                // I'm not sure at all about these yet....
+                //new Field {Order = 15, FieldName = "ImageReferenceKey", Usage = "C", DocPosition = new Range(106, 110), Type = "N", Value = "52", ValueType = ValueType.Literal},
+                new Field {Order = 15, FieldName = "LengthOfDigitalSignature", Usage = "M", DocPosition = new Range(106, 110), Type = "N", Value = "00000", ValueType = ValueType.Literal},
+                //new Field {Order = 17, FieldName = "DigitalSignature", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "52", ValueType = ValueType.Literal},
+
+                new Field {Order = 16, FieldName = "LengthOfImageData", Usage = "M", DocPosition = new Range(111, 117), Type = "N", Value = "", ValueType = ValueType.Length},
+                // This is from start position to the end... what ever that may be
+                new Field {Order = 17, FieldName = "ImageData", Usage = "M", DocPosition = new Range(118, Utils.EndOfString), Type = "Binary", Value = "", ValueType = ValueType.Binary},
             };
             return fields;
         }
@@ -372,5 +445,7 @@ namespace x937
         NBSMOS,
         LeadingZeros,
         Sequence,
+        Length,
+        Binary
     }
 }

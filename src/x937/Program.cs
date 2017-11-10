@@ -449,7 +449,14 @@ namespace x937
                 Console.WriteLine($"Received: {type}");
                 foreach (var prop in type.GetProperties())
                 {
-                    Console.WriteLine($"{Utils.Prettify(prop.Name)}: {prop.GetValue(rec)}");
+                    if (prop.PropertyType == typeof(byte[]))
+                    {
+                        Console.WriteLine($"{Utils.Prettify(prop.Name)} (byte[]) Length: {((byte[])prop.GetValue(rec)).Length}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{Utils.Prettify(prop.Name)}: {prop.GetValue(rec)}");
+                    }
                 }
             }
         }
