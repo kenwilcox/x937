@@ -20,6 +20,7 @@ namespace x937
                 case "52": dataLength = 117; ret = new R52(); break;
                 case "61": ret = new R61(); break;
                 case "70": ret = new R70(); break;
+                case "90": ret = new R90(); break;
                 default: ret = new Unknown(); break;
             }
 
@@ -371,6 +372,30 @@ namespace x937
         public string MICRValidTotalAmount { get; set; }
         public string ImagesWithinBatchCount { get; set; }
         public string UserField { get; set; }
+        public string Reserved { get; set; }
+    }
+
+    public class R90: X9Record
+    {
+        public override void SetData(string data, byte[] optional = null)
+        {
+            base.SetData(data, optional);
+            Debug.WriteLine("R90 SetData() called");
+            BatchCount = Data.Substring(2, 6);
+            ItemsWithinCashLetterCount = Data.Substring(8, 8);
+            CashLetterTotalAmount = Data.Substring(16, 14);
+            ImagesWithinCashLetterCount = Data.Substring(30, 9);
+            CustomerName = Data.Substring(39, 18);
+            CreditDate = Data.Substring(57, 8);
+            Reserved = Data.Substring(65, 15);
+        }
+
+        public string BatchCount { get; set; }
+        public string ItemsWithinCashLetterCount { get; set; }
+        public string CashLetterTotalAmount { get; set; }
+        public string ImagesWithinCashLetterCount { get; set; }
+        public string CustomerName { get; set; }
+        public string CreditDate { get; set; }
         public string Reserved { get; set; }
     }
 }
