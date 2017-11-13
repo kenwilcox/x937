@@ -104,5 +104,15 @@ namespace x937
 
             return tvSum;
         }
+
+        public static Summary GetSummary(X9Recs records)
+        {
+            var summary = new Summary();
+            foreach(X9Rec item in records)
+            {
+                summary.SetSummaryData(item.RecType, item.RecData);
+            }
+            return summary;
+        }
     }
 }
