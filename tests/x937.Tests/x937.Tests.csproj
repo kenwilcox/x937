@@ -17,4 +17,10 @@
     <ProjectReference Include="..\..\src\x937\x937.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="101Bank Of America20130218.ICL">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
