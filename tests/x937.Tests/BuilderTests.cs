@@ -35,6 +35,7 @@ namespace x937.Tests
             };
             // Act
             var exception = Xunit.Record.Exception(() => Builder.GetTestStringFor(fields));
+
             // Assert
             Assert.IsType<InvalidOperationException>(exception);
         }

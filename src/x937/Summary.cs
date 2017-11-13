@@ -6,36 +6,35 @@ namespace x937
 {
     public class Summary
     {
-        private readonly ICLFileSummary _objFileSummary;
-        private readonly ICLCashLetterSummary _objCashLetterSummary;
-        private readonly ICLCreditSummary _objCreditSummary;
+        //public readonly ICLFileSummary FileSummary;
+        public readonly ICLCashLetterSummary CashLetterSummary;
+        public readonly ICLCreditSummary CreditSummary;
 
-        private readonly ICLFileDetail _ifd;
-        private ICLCashLetterDetail _icld;
-        private ICLCreditDetail _icrd;
+        public readonly ICLFileDetail FileDetail;
+        public ICLCashLetterDetail CashLetterDetail;
+        public ICLCreditDetail CreditDetail;
 
         public Summary()
         {
-            // Since all the objects are internal now, not static, I don't need to null coalesce them
-            _ifd = _ifd ?? new ICLFileDetail();
-            _icld = _icld ?? new ICLCashLetterDetail();
-            _icrd = _icrd ?? new ICLCreditDetail();
-            _objFileSummary = _objFileSummary ?? new ICLFileSummary();
-            _objCashLetterSummary = _objCashLetterSummary ?? new ICLCashLetterSummary();
-            _objCreditSummary = _objCreditSummary ?? new ICLCreditSummary();
+            FileDetail = new ICLFileDetail();
+            CashLetterDetail = new ICLCashLetterDetail();
+            CreditDetail = new ICLCreditDetail();
+            //FileSummary = new ICLFileSummary();
+            CashLetterSummary = new ICLCashLetterSummary();
+            CreditSummary = new ICLCreditSummary();
         }
 
         private void CashLetterEnd()
         {
-            _objCashLetterSummary.Add(_icld);
-            _icld = new ICLCashLetterDetail();
+            CashLetterSummary.Add(CashLetterDetail);
+            CashLetterDetail = new ICLCashLetterDetail();
         }
 
         private void BundleEnd()
         {
-            if (_icrd == null || _icrd.CreditAmount <= 0) return;
-            _objCreditSummary.Add(_icrd);
-            _icrd = new ICLCreditDetail();
+            if (CreditDetail == null || CreditDetail.CreditAmount <= 0) return;
+            CreditSummary.Add(CreditDetail);
+            CreditDetail = new ICLCreditDetail();
         }
 
         public void SetSummaryData(string recType, string recData)
@@ -44,21 +43,21 @@ namespace x937
             {
                 // File Summary
                 case "01":
-                    _ifd.BankName = recData.Substring(36, 18);
-                    _ifd.FileCreationDate = recData.Substring(23, 8);
-                    _ifd.FileCreationTime = recData.Substring(31, 4);
+                    FileDetail.BankName = recData.Substring(36, 18);
+                    FileDetail.FileCreationDate = recData.Substring(23, 8);
+                    FileDetail.FileCreationTime = recData.Substring(31, 4);
                     break;
                 case "99":
-                    _ifd.TotalFileAmount = Convert.ToInt64(recData.Substring(24, 16));
-                    _ifd.TotalNumberofRecords = Convert.ToInt32(recData.Substring(8, 8));
+                    FileDetail.TotalFileAmount = Convert.ToInt64(recData.Substring(24, 16));
+                    FileDetail.TotalNumberofRecords = Convert.ToInt32(recData.Substring(8, 8));
                     break;
 
                 // Cash Letter Summary
                 case "10":
-                    _icld.CashLetterPosition = Convert.ToInt32(recData.Substring(44, 8));
+                    CashLetterDetail.CashLetterPosition = Convert.ToInt32(recData.Substring(44, 8));
                     break;
                 case "90":
-                    _icld.CashLetterAmount = Convert.ToInt64(recData.Substring(16, 14));
+                    CashLetterDetail.CashLetterAmount = Convert.ToInt64(recData.Substring(16, 14));
                     CashLetterEnd();
                     break;
 
@@ -70,13 +69,13 @@ namespace x937
 
                 // Credit Summary
                 case "61":
-                    _icrd.CreditAmount = Convert.ToInt64(recData.Substring(48, 10));
-                    _icrd.PostingAccRT = recData.Substring(19, 9);
-                    _icrd.PostingAccBankOnUs = recData.Substring(28, 20);
+                    CreditDetail.CreditAmount = Convert.ToInt64(recData.Substring(48, 10));
+                    CreditDetail.PostingAccRt = recData.Substring(19, 9);
+                    CreditDetail.PostingAccBankOnUs = recData.Substring(28, 20);
                     break;
-                //default:
-                //    Debug.WriteLine($"Do we care about {recType}?");
-                //    break;
+                default:
+                    Debug.WriteLine($"Do we care about {recType}?");
+                    break;
             }
         }
 
@@ -84,20 +83,20 @@ namespace x937
         {
             Debug.WriteLine("CreateNodeValues");
             Console.WriteLine("**SUMMARY**");
-            var tvSum = new TreeNode<string>(_ifd.BankName.Trim() + " - ICL File Summary");
-            var total = tvSum.AddChild("File Total Amount ($) - " + _ifd.TotalFileAmount);
-            total.AddChild("File Creation Date - " + _ifd.FileCreationDate);
-            total.AddChild("Total No of Records - " + _ifd.TotalNumberofRecords);
-            total.AddChild("Total No of Cash Letter - " + _objCashLetterSummary.Count);
-            var cl = tvSum.AddChild("Total Cash Letter Amount ($) - " + _objCashLetterSummary.TotalCashLetterAmount);
-            foreach (var icd in _objCashLetterSummary)
+            var tvSum = new TreeNode<string>(FileDetail.BankName.Trim() + " - ICL File Summary");
+            var total = tvSum.AddChild("File Total Amount ($) - " + FileDetail.TotalFileAmount);
+            total.AddChild("File Creation Date - " + FileDetail.FileCreationDate);
+            total.AddChild("Total No of Records - " + FileDetail.TotalNumberofRecords);
+            total.AddChild("Total No of Cash Letter - " + CashLetterSummary.Count);
+            var cl = tvSum.AddChild("Total Cash Letter Amount ($) - " + CashLetterSummary.TotalCashLetterAmount);
+            foreach (var icd in CashLetterSummary)
             {
                 cl.AddChild("Cash Letter " + icd.CashLetterPosition + " Amount ($) - " + icd.CashLetterAmount);
             }
-            if (_objCreditSummary == null || _objCreditSummary.Count <= 0) return tvSum;
-            cl.AddChild("Total No of Credit Records - " + _objCreditSummary.Count);
-            var credit = tvSum.AddChild("Total Credit Amount ($) - " + _objCreditSummary.TotalCreditRecordAmount);
-            foreach (ICLCreditDetail crd in _objCreditSummary)
+            if (CreditSummary == null || CreditSummary.Count <= 0) return tvSum;
+            cl.AddChild("Total No of Credit Records - " + CreditSummary.Count);
+            var credit = tvSum.AddChild("Total Credit Amount ($) - " + CreditSummary.TotalCreditRecordAmount);
+            foreach (ICLCreditDetail crd in CreditSummary)
             {
                 credit.AddChild($"Posting Bank On-Us {crd.PostingAccBankOnUs.Trim()} Amount ($)- {crd.CreditAmount}");
             }

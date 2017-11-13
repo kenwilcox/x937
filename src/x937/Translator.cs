@@ -26,9 +26,9 @@ namespace x937
             }
 
             var recLen = item.RecData.Length;
-            if (!(ret is Unknown) && dataLength != recLen) throw new Exception($"Record defined as {item.RecType} requires a length of {dataLength} but was {recLen}");
+            if (!(ret is Unknown) && dataLength != recLen) throw new FormatException($"Record defined as {item.RecType} requires a length of {dataLength} but was {recLen}");
             ret.SetData(item.RecData, item.ImageData);
-            if (ret.RecordType != item.RecType) throw new Exception("I didn't get what I expected");
+            if (ret.RecordType != item.RecType) throw new ArgumentException("I didn't get what I expected");
             return ret;
         }
     }

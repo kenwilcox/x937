@@ -7,5 +7,12 @@
         public long TotalFileAmount { get; set; }
         public string FileCreationDate { get; set; }
         public string FileCreationTime { get; set; }
+
+        public ICLFileDetail()
+        {
+            BankName = "";
+            FileCreationDate = "";
+            FileCreationTime = "";
+        }
     }
 }
