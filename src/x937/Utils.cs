@@ -38,7 +38,7 @@ namespace x937
                 sb.Append(c);
             }
             // terrible, but I'm lazy right now
-            return sb.ToString().Replace("E C E", "ECE");
+            return sb.ToString().Replace("E C E", "ECE").Trim();
         }
     }
 }
