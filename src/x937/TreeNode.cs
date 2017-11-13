@@ -21,8 +21,7 @@ namespace x937
         {
             get
             {
-                if (IsRoot)
-                    return 0;
+                if (IsRoot) return 0;
                 return Parent.Level + 1;
             }
         }

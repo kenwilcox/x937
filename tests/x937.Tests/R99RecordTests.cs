@@ -10,7 +10,8 @@ namespace x937.Tests
         public R99RecordTests()
         {
             var record = new Record("FileControlRecord", "99");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R99();
             _sut.SetData(_data);
         }

@@ -11,7 +11,8 @@ namespace x937.Tests
         public R52RecordTests()
         {
             var record = new Record("ImageViewDataRecord", "52");
-            var data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            var data = Builder.GetTestStringFor(meta);
             _data = data.Substring(0, 117);
             _optional = System.Text.Encoding.ASCII.GetBytes(data.Substring(117));
             _sut = new R52();

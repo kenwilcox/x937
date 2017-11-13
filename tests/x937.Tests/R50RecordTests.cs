@@ -10,7 +10,8 @@ namespace x937.Tests
         public R50RecordTests()
         {
             var record = new Record("ImageViewDetailRecord", "50");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R50();
             _sut.SetData(_data);
         }

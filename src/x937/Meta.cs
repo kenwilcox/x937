@@ -71,9 +71,8 @@ namespace x937
             return ret;
         }
 
-        public static string GetTestStringFor(Record record)
+        public static string GetTestStringFor(IEnumerable<Field> meta)
         {
-            var meta = GetMeta()[record];
             var sb = new StringBuilder();
             var previousType = ValueType.Literal;
             var binary = string.Empty;
@@ -90,7 +89,6 @@ namespace x937
                     case ValueType.Cr61: sb.Append("CR61");break; // CR61 is len(4)
                     case ValueType.Blank: sb.Append(GetBlank(field.Size, field.Value)); break;
                     case ValueType.Undefined: sb.Append(GetUndefined(field.Type, field.Size)); break;
-                        // TODO update these with better test values
                     case ValueType.NBSM: sb.Append(GetRepeating('x', field.Size)); break;
                     case ValueType.NBSMOS: sb.Append(GetRepeating('z', field.Size));break;
                     case ValueType.LeadingZeros: sb.Append(GetUndefined(field.Type, field.Size)); break;
@@ -101,17 +99,17 @@ namespace x937
                         break;
                     case ValueType.Binary:
                         if (previousType == ValueType.Length) sb.Append(binary);
-                        else throw new Exception("ValueType Binary used before ValueType Length");
+                        else throw new InvalidOperationException("ValueType Binary used before ValueType Length");
                         break;
-                    default: throw new Exception($"No processor for {field.ValueType}");
+                    default: throw new NotImplementedException($"No processor for {field.ValueType}");
                 }
                 if (field.ValueType != ValueType.Binary)
                 {
-                    if (sb.Length != length + field.Size) throw new Exception($"Field {field.FieldName} generated a size of {sb.Length - length}, but it should have been {field.Size}");
+                    if (sb.Length != length + field.Size) throw new ArgumentOutOfRangeException($"Field {field.FieldName} generated a size of {sb.Length - length}, but it should have been {field.Size}");
                 }
                 else
                 {
-                    if (sb.Length != length + binary.Length) throw new Exception($"Field {field.FieldName} should have been {binary.Length}");
+                    if (sb.Length != length + binary.Length) throw new ArgumentOutOfRangeException($"Field {field.FieldName} should have been {binary.Length}");
                 }
                 previousType = field.ValueType;
             }

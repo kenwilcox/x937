@@ -10,7 +10,8 @@ namespace x937.Tests
         public R26RecordTests()
         {
             var record = new Record("CheckDetailAddendumARecord", "26");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R26();
             _sut.SetData(_data);
         }

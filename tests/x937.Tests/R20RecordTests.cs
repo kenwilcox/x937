@@ -10,7 +10,8 @@ namespace x937.Tests
         public R20RecordTests()
         {
             var record = new Record("BatchHeaderRecord", "20");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R20();
             _sut.SetData(_data);
         }

@@ -10,7 +10,8 @@ namespace x937.Tests
         public R90RecordTests()
         {
             var record = new Record("CashLetterControlRecord", "90");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R90();
             _sut.SetData(_data);
         }

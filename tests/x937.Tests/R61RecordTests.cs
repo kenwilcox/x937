@@ -10,7 +10,8 @@ namespace x937.Tests
         public R61RecordTests()
         {
             var record = new Record("CreditDetailRecord", "61");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R61();
             _sut.SetData(_data);
         }

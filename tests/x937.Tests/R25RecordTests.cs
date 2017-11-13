@@ -10,7 +10,8 @@ namespace x937.Tests
         public R25RecordTests()
         {
             var record = new Record("CheckDetailRecord", "25");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R25();
             _sut.SetData(_data);
         }

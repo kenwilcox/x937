@@ -10,7 +10,8 @@ namespace x937.Tests
         public R70RecordTests()
         {
             var record = new Record("BatchControlRecord", "70");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R70();
             _sut.SetData(_data);
         }

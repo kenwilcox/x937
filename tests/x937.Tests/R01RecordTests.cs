@@ -10,7 +10,8 @@ namespace x937.Tests
         public R01RecordTests()
         {
             var record = new Record("FileHeaderRecord", "01");
-            _data = Builder.GetTestStringFor(record);
+            var meta = Builder.GetMeta()[record];
+            _data = Builder.GetTestStringFor(meta);
             _sut = new R01();
             _sut.SetData(_data);
         }
