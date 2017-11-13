@@ -4,30 +4,23 @@ using System.Text;
 
 namespace x937
 {
-    public class Parser
+    public static class Parser
     {
         public static X9Recs ParseX9File(string x9File)
         {
             var ret = new X9Recs();
 
-            // open x9.37 file from bank
             var fs = new FileStream(x9File, FileMode.Open, FileAccess.Read, FileShare.Read);
-            //Dim ofs As New FileStream(allImgFile, FileMode.Create)
             var curPos = 0;
             // 37 is EBCDIC encoding
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // please???
             var br = new BinaryReader(fs, Encoding.GetEncoding(37));
-            //ArrayList alImg = new ArrayList();
 
             // Read first record
             var reclenB = br.ReadBytes(4); // to hold rec length in Big Endian byte order (motorola format) why Big Endian??
             curPos += 4;
             Array.Reverse(reclenB); // this is 'cause the rec length is in Big Endian order why? (probably some wise ass)
             var reclen = BitConverter.ToInt32(reclenB, 0); // convert rec length to integer
-
-            // variables to hold currect record
-
-            // variables to hold various key lengths in the variable record type 53 which also holds the check image
 
             // counts
             var fileRecCount = 0;
@@ -53,21 +46,15 @@ namespace x937
                 if (fileRecCount % 100 == 0)
                 {
                     // Do I care about displaying a progress?
-                    //progbLoad.Value = (int)(readSize / (double)fileSize) * 100;
-                    //Console.WriteLine((int)(readSize / (double)fileSize) * 100);
                     //Console.WriteLine((readSize / 1024.0).ToString("###,###,###,###") + " KB of " + (fileSize / 1024.0).ToString("###,###,###,###") + " KB");
-                    //Application.DoEvents();
                 }
-                //rec = Encoding.ASCII.GetString(Encoding.Convert(Encoding.GetEncoding(37), Encoding.GetEncoding("ASCII"), recB));
                 var rec = Encoding.ASCII.GetString(recB);
                 fileRecCount += 1;
                 switch (rec.Substring(0, 2))
                 {
                     case "01": // File Header record
                         fileStarted = true;
-                        //_tvx9.Data = "Header (01):" +
                         ret.Add(new X9Rec("01", rec, ""));
-                        //_onFileSummary(rec.Substring(0, 2), rec);
                         break;
                     case "10": // cash file header
                         if (fileStarted)
@@ -89,7 +76,6 @@ namespace x937
                                 clStarted = true;
                             }
                             ret.Add(new X9Rec("10", rec, ""));
-                            //_onCashLetterSummary(rec.Substring(0, 2), rec);
                         }
                         else
                         {
@@ -132,7 +118,6 @@ namespace x937
                             return new X9Recs();
                         }
                         ret.Add(new X9Rec("20", rec, ""));
-                        //_onBundleSummary(rec.Substring(0, 2), rec);
                         break;
                     case "25": // check detail record
                         if (bundleStarted && !bundleEnded)
@@ -254,7 +239,6 @@ namespace x937
                         {
                             ret.Add(new X9Rec("61", rec, ""));
                             checkStarted = true;
-                            //_onCreditSummary(rec.Substring(0, 2), rec);
                             checkBack50 = false;
                             checkBack52 = false;
                             checkFront50 = false;
@@ -264,17 +248,14 @@ namespace x937
                     case "70":
                         bundleEnded = true;
                         ret.Add(new X9Rec("70", rec, ""));
-                        //_onBundleSummary(rec.Substring(0, 2), rec);
                         break;
                     case "90":
                         clEnded = true;
                         ret.Add(new X9Rec("90", rec, ""));
-                        //_onCashLetterSummary(rec.Substring(0, 2), rec);
                         break;
                     case "99":
                         fileEnded = true;
                         ret.Add(new X9Rec("99", rec, ""));
-                        //_onFileSummary(rec.Substring(0, 2), rec);
                         break;
                     default: throw new NotImplementedException($"No handler for fields of type {rec.Substring(0, 2)} found");
                 }
