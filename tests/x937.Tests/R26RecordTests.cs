@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using x937.Meta;
+using Xunit;
 
 namespace x937.Tests
 {
@@ -9,7 +10,7 @@ namespace x937.Tests
 
         public R26RecordTests()
         {
-            var record = new Record("CheckDetailAddendumARecord", "26");
+            var record = new XRecord("CheckDetailAddendumARecord", "26");
             var meta = Builder.GetMeta()[record];
             _data = Builder.GetTestStringFor(meta);
             _sut = new R26();

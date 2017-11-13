@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using x937.Meta;
 using Xunit;
 
 namespace x937.Tests
@@ -22,7 +20,7 @@ namespace x937.Tests
         public void TestThatGenerate_ReturnsExpectedCode(string recordName, string recordType)
         {
             // Arrange
-            var key = new Record(recordName, recordType);
+            var key = new XRecord(recordName, recordType);
             var meta = Builder.GetMeta()[key];
 
             // Act

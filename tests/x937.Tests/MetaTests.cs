@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using x937.Meta;
 using Xunit;
 
 namespace x937.Tests
 {
     public class MetaTests
     {
-        private readonly Meta _metadata;
+        private readonly Metadata _metadata;
         public MetaTests()
         {
             _metadata = Builder.GetMeta();
@@ -27,7 +28,7 @@ namespace x937.Tests
         public void TestMeta_ObjectFieldLength(string recordName, string recordType, int expectedLength)
         {
             // Arrange
-            var key = new Record(recordName, recordType);
+            var key = new XRecord(recordName, recordType);
             var meta = _metadata[key];
             var record = Builder.GetObjectFor(key);
 
@@ -63,7 +64,7 @@ namespace x937.Tests
         public void TestMeta_MetaFieldCount(string recordName, string recordType, int expectedCount)
         {
             // Arrange
-            var meta = _metadata[new Record(recordName, recordType)];
+            var meta = _metadata[new XRecord(recordName, recordType)];
 
             // Act
             var list = new List<int>();
@@ -100,7 +101,7 @@ namespace x937.Tests
         public void TestMeta_MetaFieldCounts(string recordName, string recordType, int fieldCount)
         {
             // Arrange, Act
-            var meta = _metadata[new Record(recordName, recordType)];
+            var meta = _metadata[new XRecord(recordName, recordType)];
             // Assert
             Assert.Equal(fieldCount, meta.Count);
         }
@@ -120,7 +121,7 @@ namespace x937.Tests
         public void TestMeta_MetaFieldNumbers(string recordName, string recordType, int fieldCount)
         {
             // Arrange
-            var meta = _metadata[new Record(recordName, recordType)];
+            var meta = _metadata[new XRecord(recordName, recordType)];
 
             // Act, Assert
             var counter = 0;
@@ -149,7 +150,7 @@ namespace x937.Tests
         public void TestMeta_ContainsValidUsage(string recordName, string recordType)
         {
             // Arrange
-            var meta = _metadata[new Record(recordName, recordType)];
+            var meta = _metadata[new XRecord(recordName, recordType)];
 
             // Act, Assert
             foreach (var field in meta)

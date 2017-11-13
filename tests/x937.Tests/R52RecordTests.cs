@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using x937.Meta;
+using Xunit;
 
 namespace x937.Tests
 {
@@ -10,7 +11,7 @@ namespace x937.Tests
 
         public R52RecordTests()
         {
-            var record = new Record("ImageViewDataRecord", "52");
+            var record = new XRecord("ImageViewDataRecord", "52");
             var meta = Builder.GetMeta()[record];
             var data = Builder.GetTestStringFor(meta);
             _data = data.Substring(0, 117);

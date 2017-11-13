@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using x937.Meta;
+using Xunit;
 
 namespace x937.Tests
 {
@@ -11,8 +12,8 @@ namespace x937.Tests
         public void TestThat_SameRecords_AreEqual(string name1, string typeId1, string name2, string typeId2)
         {
             // Arrange
-            var record1 = new Record(name1, typeId1);
-            var record2 = new Record(name2, typeId2);
+            var record1 = new XRecord(name1, typeId1);
+            var record2 = new XRecord(name2, typeId2);
 
             // Act
             var result = record1.Equals(record2);
@@ -28,8 +29,8 @@ namespace x937.Tests
         public void TestThat_SameRecordsAsObject_AreEqual(string name1, string typeId1, string name2, string typeId2)
         {
             // Arrange
-            var record1 = new Record(name1, typeId1);
-            var record2 = new Record(name2, typeId2);
+            var record1 = new XRecord(name1, typeId1);
+            var record2 = new XRecord(name2, typeId2);
 
             // Act
             var result = record1.Equals((object)record2);

@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using x937.Meta;
+using Xunit;
 
 namespace x937.Tests
 {
@@ -9,7 +10,7 @@ namespace x937.Tests
 
         public R20RecordTests()
         {
-            var record = new Record("BatchHeaderRecord", "20");
+            var record = new XRecord("BatchHeaderRecord", "20");
             var meta = Builder.GetMeta()[record];
             _data = Builder.GetTestStringFor(meta);
             _sut = new R20();

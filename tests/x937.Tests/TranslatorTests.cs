@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace x937.Tests
@@ -64,7 +60,7 @@ namespace x937.Tests
             var rec = new X9Rec(recType, recData, "");
 
             // Act
-            var exception = Xunit.Record.Exception(() => Translator.Translate(rec));
+            var exception = Record.Exception(() => Translator.Translate(rec));
 
             // Assert
             Assert.IsType<FormatException>(exception);
@@ -77,7 +73,7 @@ namespace x937.Tests
             var rec = new X9Rec();
 
             // Act
-            var exception = Xunit.Record.Exception(() => Translator.Translate(rec));
+            var exception = Record.Exception(() => Translator.Translate(rec));
 
             // Assert
             Assert.IsType<ArgumentOutOfRangeException>(exception);
@@ -90,7 +86,7 @@ namespace x937.Tests
             var rec = new X9Rec("01", "10------------------------------------------------------------------------------", "");
 
             // Act
-            var exception = Xunit.Record.Exception(() => Translator.Translate(rec));
+            var exception = Record.Exception(() => Translator.Translate(rec));
 
             // Assert
             Assert.IsType<ArgumentException>(exception);

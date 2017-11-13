@@ -5,7 +5,7 @@ namespace x937.Tests
 {
     public class SummaryNodeValues
     {
-        public readonly TreeNode<string> _sut;
+        private readonly TreeNode<string> _sut;
 
         public SummaryNodeValues()
         {

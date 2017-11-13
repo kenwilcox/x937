@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace x937
+namespace x937.Meta
 {
     public static class Builder
     {
@@ -30,27 +30,27 @@ namespace x937
             };
         }
 
-        public static Meta GetMeta()
+        public static Metadata GetMeta()
         {
-            var meta = new Meta
+            var meta = new Metadata
             {
-                {new Record("FileHeaderRecord", "01"), BuildT01Fields()},
-                {new Record("CashLetterHeaderRecord", "10"), BuildT10Fields()},
-                {new Record("BatchHeaderRecord", "20"), BuildT20Fields()},
-                {new Record("CheckDetailRecord", "25"), BuildT25Fields()},
-                {new Record("CheckDetailAddendumARecord", "26"), BuildT26Fields()},
-                {new Record("ImageViewDetailRecord", "50"), BuildT50Fields()},
-                {new Record("ImageViewDataRecord", "52"), BuildT52Fields()},
-                {new Record("CreditDetailRecord", "61"), BuildT61Fields()},
-                {new Record("BatchControlRecord", "70"), BuildT70Fields()},
-                {new Record("CashLetterControlRecord", "90"), BuildT90Fields()},
-                {new Record("FileControlRecord", "99"), BuildT99Fields()}
+                {new XRecord("FileHeaderRecord", "01"), BuildT01Fields()},
+                {new XRecord("CashLetterHeaderRecord", "10"), BuildT10Fields()},
+                {new XRecord("BatchHeaderRecord", "20"), BuildT20Fields()},
+                {new XRecord("CheckDetailRecord", "25"), BuildT25Fields()},
+                {new XRecord("CheckDetailAddendumARecord", "26"), BuildT26Fields()},
+                {new XRecord("ImageViewDetailRecord", "50"), BuildT50Fields()},
+                {new XRecord("ImageViewDataRecord", "52"), BuildT52Fields()},
+                {new XRecord("CreditDetailRecord", "61"), BuildT61Fields()},
+                {new XRecord("BatchControlRecord", "70"), BuildT70Fields()},
+                {new XRecord("CashLetterControlRecord", "90"), BuildT90Fields()},
+                {new XRecord("FileControlRecord", "99"), BuildT99Fields()}
             };
 
             return meta;
         }
 
-        public static X9Record GetObjectFor(Record record)
+        public static X9Record GetObjectFor(XRecord record)
         {
             X9Record ret;
             switch (record.TypeId)
@@ -81,18 +81,18 @@ namespace x937
                 var length = sb.Length;
                 switch (field.ValueType)
                 {
-                    case ValueType.Literal: sb.Append(field.Value);break;
-                    case ValueType.RoutePattern: sb.Append("TTTTAAAAC".Substring(0, field.Size));break; // some route patterns exclude the check digit
-                    case ValueType.Position: sb.Append("4242");break;
-                    case ValueType.Date: sb.Append(field.Size == 8 ? "YYYYMMDD" : "HHmm");break;
+                    case ValueType.Literal: sb.Append(field.Value); break;
+                    case ValueType.RoutePattern: sb.Append("TTTTAAAAC".Substring(0, field.Size)); break; // some route patterns exclude the check digit
+                    case ValueType.Position: sb.Append("4242"); break;
+                    case ValueType.Date: sb.Append(field.Size == 8 ? "YYYYMMDD" : "HHmm"); break;
                     case ValueType.Logical: sb.Append(GetLogical(field.Value, field.Size)); break;
-                    case ValueType.Cr61: sb.Append("CR61");break; // CR61 is len(4)
+                    case ValueType.Cr61: sb.Append("CR61"); break; // CR61 is len(4)
                     case ValueType.Blank: sb.Append(GetBlank(field.Size, field.Value)); break;
                     case ValueType.Undefined: sb.Append(GetUndefined(field.Type, field.Size)); break;
                     case ValueType.NBSM: sb.Append(GetRepeating('x', field.Size)); break;
-                    case ValueType.NBSMOS: sb.Append(GetRepeating('z', field.Size));break;
+                    case ValueType.NBSMOS: sb.Append(GetRepeating('z', field.Size)); break;
                     case ValueType.LeadingZeros: sb.Append(GetUndefined(field.Type, field.Size)); break;
-                    case ValueType.Sequence: sb.Append(GetUndefined(field.Type, field.Size));break;
+                    case ValueType.Sequence: sb.Append(GetUndefined(field.Type, field.Size)); break;
                     case ValueType.Length:
                         binary = GetRandomData(Rnd.Next(2048, 65536)); // 2 - 64KB
                         sb.Append(binary.Length.ToString().PadLeft(field.Size));
@@ -124,7 +124,7 @@ namespace x937
                 .Select(s => s[Rnd.Next(s.Length)]).ToArray());
         }
 
-        public static string GetClassFor(Record record)
+        public static string GetClassFor(XRecord record)
         {
             var meta = GetMeta()[record];
             var sb = new StringBuilder();
@@ -156,7 +156,7 @@ namespace x937
 
         private static string GetLogical(string value, int size)
         {
-            var parts = value.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
             var idx = Rnd.Next(parts.Length);
             return parts[idx].PadLeft(size, ' ');
         }
@@ -421,106 +421,5 @@ namespace x937
             };
             return fields;
         }
-    }
-
-    public class Meta : Dictionary<Record, List<Field>>
-    {
-    }
-
-    public class Record: IEquatable<Record>
-    {
-        public readonly string Name;
-        public readonly string TypeId;
-
-        public Record(string name, string typeId)
-        {
-            Name = name;
-            TypeId = typeId;
-        }
-
-        public override int GetHashCode()
-        {
-            return TypeId.GetHashCode() * Name.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as Record);
-        }
-
-        public bool Equals(Record obj)
-        {
-            return obj != null && obj.Name == Name && obj.TypeId == TypeId;
-        }
-    }
-
-    public class Field
-    {
-        public int Order { get; set; }
-        public string FieldName { get; set; }
-        public string Usage { get; set; }
-        public Range DocPosition { private get; set; }
-        //public int Size { get; set; }
-        public string Type { get; set; }
-        public string Value { get; set; }
-        public ValueType ValueType { get; set; }
-        // Because the documentation is 1 based and .net is 0 based...
-        public Range Position => new Range(DocPosition.Start -1, DocPosition.End);
-        public int Size => Position.End - Position.Start;
-    }
-
-    public struct Range: IEquatable<Range>
-    {
-        public readonly int Start;
-        public readonly int End;
-
-        public Range(int start, int end)
-        {
-            Start = start;
-            End = end;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals((Range)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return Start.GetHashCode() * End.GetHashCode();
-        }
-
-        public bool Equals(Range obj)
-        {
-            return obj.Start == Start && obj.End == End;
-        }
-
-        public static bool operator ==(Range left, Range right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Range left, Range right)
-        {
-            return !(left == right);
-        }
-    }
-
-    public enum ValueType
-    {
-        Undefined,
-        Literal,
-        Logical,
-        Date,
-        RoutePattern,
-        Blank,
-        Cr61,
-        Position,
-        NBSM,
-        NBSMOS,
-        LeadingZeros,
-        Sequence,
-        Length,
-        Binary
     }
 }
