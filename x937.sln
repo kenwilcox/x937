@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+VisualStudioVersion = 15.0.27004.2008
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "x937", "src\x937\x937.csproj", "{385D34C0-BC26-4CB4-9A69-B6BA333754CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Tests", "_Tests", "{EAF00CBC-A268-46BB-844E-44986262539D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "x937.Tests", "tests\x937.Tests\x937.Tests.csproj", "{628D7E07-5C20-4D1A-88B2-F6869053C18B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "x937.Tests", "tests\x937.Tests\x937.Tests.csproj", "{628D7E07-5C20-4D1A-88B2-F6869053C18B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4F6923E9-5671-4E05-A61F-3AC1214400C0}"
+	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
