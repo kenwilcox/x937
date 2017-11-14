@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <None Update="101Bank Of America20130218.ICL">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
