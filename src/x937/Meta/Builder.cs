@@ -101,7 +101,7 @@ namespace x937.Meta
                         if (previousType == ValueType.Length) sb.Append(binary);
                         else throw new InvalidOperationException("ValueType Binary used before ValueType Length");
                         break;
-                    default: throw new NotImplementedException($"No processor for {field.ValueType}");
+                    //default: throw new NotImplementedException($"No processor for {field.ValueType}");
                 }
                 if (field.ValueType != ValueType.Binary)
                 {

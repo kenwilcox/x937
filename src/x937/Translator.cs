@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace x937
@@ -39,8 +41,26 @@ namespace x937
         string RecordType { get; }
     }
 
-    public abstract class X9Record: IX9Record
+    public abstract class X9Record: IX9Record, IEquatable<X9Record>
     {
+        protected X9Record()
+        {
+            Data = "  ";
+        }
+
+        protected static void SetDefaultProperties(X9Record obj)
+        {
+            var type = obj.GetType();
+            var infos = type.GetProperties();
+            var strType = typeof(string);
+
+            foreach (var prop in infos)
+            {
+                if (prop.CanWrite && prop.PropertyType == strType)
+                prop.SetValue(obj, "");
+            }
+        }
+
         protected string Data;
         public virtual void SetData(string data, byte[] optional = null)
         {
@@ -50,6 +70,32 @@ namespace x937
             if (!string.IsNullOrWhiteSpace(Data)) return;
             Data = data;
         }
+
+        public bool Equals(X9Record other)
+        {
+            var strType = typeof(string);
+
+            var otype = other.GetType();
+            var oinfo = otype.GetProperties().Where(x => x.PropertyType == strType && x.CanRead).ToDictionary(k => k.Name, v => v.GetValue(other));
+
+            var ttype = this.GetType();
+            var tinfo = ttype.GetProperties().Where(x => x.PropertyType == strType && x.CanRead).ToDictionary(k => k.Name, v => v.GetValue(this));
+
+            foreach (var key in oinfo.Keys)
+            {
+                if (!tinfo.ContainsKey(key)) return false;
+
+                //var o = oinfo[key];
+                //var t = tinfo[key];
+
+                //var oval = o.GetValue(other);
+                //var tval = t.GetValue(this);
+                //if (oval != tval) return false;
+                if (oinfo[key] != tinfo[key]) return false;
+            }
+            return true;
+        }
+
         public string RecordType => Data.Substring(0, 2);
     }
 
@@ -60,6 +106,11 @@ namespace x937
 
     public class R01 : X9Record
     {
+        public R01()
+        {
+            SetDefaultProperties(this);
+        }
+
         public override void SetData(string data, byte[] optional = null)
         {
             base.SetData(data, optional);

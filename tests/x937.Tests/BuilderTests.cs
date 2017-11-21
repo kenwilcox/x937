@@ -40,5 +40,24 @@ namespace x937.Tests
             // Assert
             Assert.IsType<InvalidOperationException>(exception);
         }
+
+        [Theory]
+        [InlineData("FileHeaderRecord", "01")]
+        //[InlineData("CashLetterHeaderRecord", "10")]
+        //[InlineData("BuilderIgnoresTheName", "01")]
+        //[InlineData("CashLetterHeaderRecord", "98")]
+        public void TestThatRecords_ReturnsExactObject(string name, string typeId)
+        {
+            // Arrange
+            var record = new XRecord(name, typeId);
+
+            // Act
+            var obj = Builder.GetObjectFor(record);
+            var sut = Builder.GetObjectFor(record);
+
+            // Assert
+            var ret = sut.Equals(obj);
+            Assert.True(ret);
+        }
     }
 }

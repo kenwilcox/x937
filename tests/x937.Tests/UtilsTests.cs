@@ -59,7 +59,7 @@ namespace x937.Tests
 
             // Assert
             Assert.NotNull(str);
-            Assert.Equal("  one" + Environment.NewLine, str);
+            Assert.Contains("  one" + Environment.NewLine, str);
         }
     }
 }

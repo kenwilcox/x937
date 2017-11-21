@@ -15,7 +15,7 @@ namespace x937.Meta
 
         public override int GetHashCode()
         {
-            return TypeId.GetHashCode() * Name.GetHashCode();
+            return TypeId.GetHashCode() ^ Name.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -26,6 +26,20 @@ namespace x937.Meta
         public bool Equals(XRecord obj)
         {
             return obj != null && obj.Name == Name && obj.TypeId == TypeId;
+        }
+
+        public static bool operator ==(XRecord left, XRecord right)
+        {
+            if (ReferenceEquals(left, right)) return true;
+            if (ReferenceEquals(left, null)) return false;
+            if (ReferenceEquals(right, null)) return false;
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(XRecord left, XRecord right)
+        {
+            return !(left == right);
         }
     }
 }
