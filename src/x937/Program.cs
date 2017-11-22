@@ -32,9 +32,9 @@ namespace x937
             foreach (X9Rec item in records)
             {
                 var data = new byte[0];
-                if (File.Exists(item.FilePath))
+                if (item.ImageData?.Length > 0)
                 {
-                    data = File.ReadAllBytes(item.FilePath);
+                    data = item.ImageData;
                 }
 
                 var recLen = data.Length + item.RecData.Length;
