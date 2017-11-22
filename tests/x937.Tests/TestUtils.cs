@@ -4,6 +4,10 @@ using Xunit;
 
 namespace x937.Tests
 {
+    // https://xunit.github.io/docs/shared-context.html
+    // specifically
+    // https://xunit.github.io/docs/shared-context.html#class-fixture
+
     public class TestUtilsFixture : IDisposable
     {
         public TestUtilsFixture()
@@ -11,16 +15,26 @@ namespace x937.Tests
             ValidICLFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL");
             NewICLFile = ValidICLFile.Replace(".ICL", "New.ICL");
             InvalidICLFile = ValidICLFile.Replace(".ICL", "Invalid.ICL");
+
+            File.WriteAllBytes(ValidICLFile, GetTestICLFile());
         }
 
         public void Dispose()
         {
-            //throw new NotImplementedException();
+            File.Delete(ValidICLFile);
+            File.Delete(NewICLFile);
+            File.Delete(InvalidICLFile);
         }
 
         public string ValidICLFile { get; }
         public string NewICLFile { get; }
         public string InvalidICLFile { get; }
+
+        private static byte[] GetTestICLFile()
+        {
+            var data = Properties.Resources.ResourceManager.GetString("ValidICLFile");
+            return Convert.FromBase64String(data);
+        }
     }
 
     [CollectionDefinition("ICL Files")]
@@ -32,7 +46,7 @@ namespace x937.Tests
     [Collection("ICL Files")]
     public class TestUtils
     {
-        private TestUtilsFixture _fixture;
+        private readonly TestUtilsFixture _fixture;
 
         public TestUtils(TestUtilsFixture fixture)
         {

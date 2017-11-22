@@ -52,17 +52,18 @@ namespace x937.Tests
         }
 
         [Theory]
-        [InlineData(101, 42, 265406940)]
-        [InlineData(-1, -1, 802282331)]
-        [InlineData(65535, 65535, -2063869093)]
-        [InlineData(-65535, 65535, 626296237)]
-        public void TestThat_GetHashCode_ReturnsValidHash(int start, int end, int expected)
+        [InlineData(101, 42)]//, 265406940)]
+        [InlineData(-1, -1)]//, 802282331)]
+        [InlineData(65535, 65535)]//, -2063869093)]
+        [InlineData(-65535, 65535)]//, 626296237)]
+        public void TestThat_GetHashCode_ReturnsValidHash(int start, int end)
         {
             // Arrange
             var range = new Range(start, end);
 
             // Act
             var hash = range.GetHashCode();
+            var expected = new {Start = start, End = end}.GetHashCode();
 
             // Assert
             Assert.Equal(expected, hash);

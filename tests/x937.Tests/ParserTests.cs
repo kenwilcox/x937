@@ -4,13 +4,21 @@ using Xunit;
 
 namespace x937.Tests
 {
+    [Collection("ICL Files")]
     public class ParserTests
     {
+        private readonly TestUtilsFixture _fixture;
+
+        public ParserTests(TestUtilsFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public void TestThat_ParsingACorrectFile_Works()
         {
             // Arrange
-            var file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"101Bank Of America20130218.ICL");
+            var file = _fixture.ValidICLFile;
 
             // Act
             var recs = Parser.ParseX9File(file);
