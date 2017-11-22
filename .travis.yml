@@ -5,4 +5,4 @@ dotnet: 2.0.0
 dist: trusty
 script:
  - dotnet restore
- - dotnet test tests/x937.Tests/x937.Tests.csproj
+
