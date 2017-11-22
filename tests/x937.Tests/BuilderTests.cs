@@ -32,7 +32,7 @@ namespace x937.Tests
             // Arrange
             var fields = new List<Field>
             {
-                new Field {FieldType = Meta.FieldType.Binary},
+                new Field {DataType = DataType.Binary},
             };
             // Act
             var exception = Record.Exception(() => Builder.GetTestStringFor(fields));
@@ -82,8 +82,8 @@ namespace x937.Tests
             // Arrange
             var fields = new List<Field>
             {
-                new Field { FieldType = Meta.FieldType.Binary },
-                new Field { FieldType = Meta.FieldType.Length},
+                new Field { DataType = DataType.Binary },
+                new Field { DataType = DataType.Length},
             };
 
             // Act
@@ -101,8 +101,8 @@ namespace x937.Tests
             // Arrange
             var fields = new List<Field>
             {
-                new Field { FieldType = Meta.FieldType.Binary },
-                new Field { FieldType = Meta.FieldType.Length},
+                new Field { DataType = DataType.Binary },
+                new Field { DataType = DataType.Length},
             };
 
             // Act

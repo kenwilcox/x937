@@ -33,7 +33,7 @@ namespace x937.Tests
             var record = Builder.GetObjectFor(key);
 
             // Act
-            var size = meta.Where(x =>x.FieldType != FieldType.Binary).Sum(x => x.Size);
+            var size = meta.Where(x =>x.DataType != DataType.Binary).Sum(x => x.Size);
             var props = record.GetType().GetProperties().Select(x => x.Name).ToList();
             var mprops = meta.Select(x => x.FieldName).ToList();
             mprops.Sort();
@@ -70,7 +70,7 @@ namespace x937.Tests
             var list = new List<int>();
             foreach (var field in meta)
             {
-                if (field.FieldType == FieldType.Binary) continue;
+                if (field.DataType == DataType.Binary) continue;
                 var start = field.Position.Start;
                 var end = field.Position.End;
                 for (var i = start; i < end; i++)

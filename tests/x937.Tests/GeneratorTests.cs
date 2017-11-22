@@ -32,7 +32,7 @@ namespace x937.Tests
                 if (field.FieldName == "RecordType") continue; // base class, all have it
 
                 // Set Data bits
-                if (field.FieldType != FieldType.Binary)
+                if (field.DataType != DataType.Binary)
                 {
                     Assert.Contains($"{field.FieldName} = Data.Substring({field.Position.Start}, {field.Size})", code);
                 }
@@ -44,9 +44,9 @@ namespace x937.Tests
 
 
                 // Property bits
-                var fieldType = "string";
-                if (field.FieldType == FieldType.Binary) fieldType = "byte[]";
-                Assert.Contains($"public {fieldType} {field.FieldName} {{ get; set; }}", code);
+                var dataType = "string";
+                if (field.DataType == DataType.Binary) dataType = "byte[]";
+                Assert.Contains($"public {dataType} {field.FieldName} {{ get; set; }}", code);
             }
         }
     }
