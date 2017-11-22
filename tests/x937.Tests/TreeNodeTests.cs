@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -143,6 +145,64 @@ namespace x937.Tests
 
             // Assert
             Assert.Equal(5, root.Count());
+        }
+
+        [Fact]
+        public void TestThatTreeNode_CanBeEnumerated()
+        {
+            // Arrange
+            var list = new List<string> {"ONE", "TWO", "THREE"};
+
+            // Act
+            var sut = new TreeNode<string>("-root-");
+            sut.AddChild("ONE");
+            sut.AddChild("TWO");
+            sut.AddChild("THREE");
+
+            // Assert
+            var counter = 0;
+            foreach (var node in sut.Children)
+            {
+                var expected = list[counter];
+                Assert.Equal(expected, node.Data);
+                counter++;
+            }
+        }
+
+        [Theory]
+        [InlineData("ONE", "ONE")]
+        [InlineData(null, "[data null]")]
+        public void TestThatTreeNode_ToStringIsCorrect(string value, string expected)
+        {
+            // Arrange
+            var node = new TreeNode<string>(value);
+
+            // Act
+            var result = node.ToString();
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void TestThat_TreeNodeCanBeTested_AsIEnumerable()
+        {
+            // Arrange
+            var sut = new TreeNode<string>("-root-");
+            sut.AddChild("ONE");
+            sut.AddChild("TWO");
+            sut.AddChild("THREE");
+
+            // Act
+            var counter = 0;
+            var enumerator = ((IEnumerable) sut).GetEnumerator(); // need this cast for code coverage
+            while (enumerator.MoveNext())
+            {
+                counter++;
+            }
+
+            // Assert
+            Assert.Equal(4, counter);
         }
     }
 
