@@ -32,7 +32,7 @@ namespace x937
 
         private void BundleEnd()
         {
-            if (CreditDetail == null || CreditDetail.CreditAmount <= 0) return;
+            if (CreditDetail.CreditAmount <= 0) return;
             CreditSummary.Add(CreditDetail);
             CreditDetail = new ICLCreditDetail();
         }
@@ -93,7 +93,7 @@ namespace x937
             {
                 cl.AddChild("Cash Letter " + icd.CashLetterPosition + " Amount ($) - " + icd.CashLetterAmount);
             }
-            if (CreditSummary == null || CreditSummary.Count <= 0) return tvSum;
+            if (CreditSummary.Count <= 0) return tvSum;
             cl.AddChild("Total No of Credit Records - " + CreditSummary.Count);
             var credit = tvSum.AddChild("Total Credit Amount ($) - " + CreditSummary.TotalCreditRecordAmount);
             foreach (ICLCreditDetail crd in CreditSummary)
