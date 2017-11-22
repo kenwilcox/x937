@@ -1,6 +1,6 @@
 ﻿namespace x937.Meta
 {
-    public enum ValueType
+    public enum FieldType
     {
         Undefined,
         Literal,

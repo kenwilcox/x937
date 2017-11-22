@@ -20,7 +20,7 @@ namespace x937.Meta
 
         public override int GetHashCode()
         {
-            return Start.GetHashCode() ^ End.GetHashCode();
+            return new {Start, End}.GetHashCode();
         }
 
         public bool Equals(Range obj)

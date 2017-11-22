@@ -15,7 +15,7 @@ namespace x937.Meta
 
         public override int GetHashCode()
         {
-            return TypeId.GetHashCode() ^ Name.GetHashCode();
+            return new {TypeId, Name}.GetHashCode();
         }
 
         public override bool Equals(object obj)

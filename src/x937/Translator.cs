@@ -46,6 +46,7 @@ namespace x937
         protected X9Record()
         {
             Data = "  ";
+            SetDefaultProperties(this);
         }
 
         protected static void SetDefaultProperties(X9Record obj)
@@ -73,27 +74,17 @@ namespace x937
 
         public bool Equals(X9Record other)
         {
-            var strType = typeof(string);
+            if (ReferenceEquals(this, other)) return true; // They are the same object
+            if (other == null) return false;  // null can't be the same
 
             var otype = other.GetType();
-            var oinfo = otype.GetProperties().Where(x => x.PropertyType == strType && x.CanRead).ToDictionary(k => k.Name, v => v.GetValue(other));
+            var ttype = GetType();
+            if (otype != ttype) return false; // if they're not the same type
 
-            var ttype = this.GetType();
-            var tinfo = ttype.GetProperties().Where(x => x.PropertyType == strType && x.CanRead).ToDictionary(k => k.Name, v => v.GetValue(this));
+            var oinfo = otype.GetProperties().Where(x => x.CanRead).ToDictionary(k => k.Name, v => v.GetValue(other)?.ToString());
+            var tinfo = ttype.GetProperties().Where(x => x.CanRead).ToDictionary(k => k.Name, v => v.GetValue(this)?.ToString());
 
-            foreach (var key in oinfo.Keys)
-            {
-                if (!tinfo.ContainsKey(key)) return false;
-
-                //var o = oinfo[key];
-                //var t = tinfo[key];
-
-                //var oval = o.GetValue(other);
-                //var tval = t.GetValue(this);
-                //if (oval != tval) return false;
-                if (oinfo[key] != tinfo[key]) return false;
-            }
-            return true;
+            return oinfo.Keys.All(key => oinfo[key] == tinfo[key]); // return true if all properties are the same
         }
 
         public string RecordType => Data.Substring(0, 2);
@@ -106,11 +97,6 @@ namespace x937
 
     public class R01 : X9Record
     {
-        public R01()
-        {
-            SetDefaultProperties(this);
-        }
-
         public override void SetData(string data, byte[] optional = null)
         {
             base.SetData(data, optional);

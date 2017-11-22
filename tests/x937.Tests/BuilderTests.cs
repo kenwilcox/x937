@@ -32,7 +32,7 @@ namespace x937.Tests
             // Arrange
             var fields = new List<Field>
             {
-                new Field {ValueType = Meta.ValueType.Binary},
+                new Field {FieldType = Meta.FieldType.Binary},
             };
             // Act
             var exception = Record.Exception(() => Builder.GetTestStringFor(fields));
@@ -43,9 +43,9 @@ namespace x937.Tests
 
         [Theory]
         [InlineData("FileHeaderRecord", "01")]
-        //[InlineData("CashLetterHeaderRecord", "10")]
-        //[InlineData("BuilderIgnoresTheName", "01")]
-        //[InlineData("CashLetterHeaderRecord", "98")]
+        [InlineData("CashLetterHeaderRecord", "10")]
+        [InlineData("BuilderIgnoresTheName", "01")]
+        [InlineData("CashLetterHeaderRecord", "98")]
         public void TestThatRecords_ReturnsExactObject(string name, string typeId)
         {
             // Arrange
@@ -58,6 +58,78 @@ namespace x937.Tests
             // Assert
             var ret = sut.Equals(obj);
             Assert.True(ret);
+        }
+
+        [Fact]
+        public void TestThat_GetTestStringFor_CoversUndefinedEdgeCase()
+        {
+            // Arrange
+            var fields = new List<Field>
+            {
+                new Field { Type = "NotFound" },
+            };
+
+            // Act
+            var str = Builder.GetTestStringFor(fields);
+
+            // Assert
+            Assert.Equal("-", str);
+        }
+
+        [Fact]
+        public void TestThat_GetTestStringFor_HandlesBinaryException()
+        {
+            // Arrange
+            var fields = new List<Field>
+            {
+                new Field { FieldType = Meta.FieldType.Binary },
+                new Field { FieldType = Meta.FieldType.Length},
+            };
+
+            // Act
+            var str = "";
+            var exception = Record.Exception(() => str = Builder.GetTestStringFor(fields));
+
+            // Assert
+            Assert.Equal("", str);
+            Assert.IsType<InvalidOperationException>(exception);
+        }
+
+        [Fact]
+        public void TestThat_GetTestStringFor_HandlesBinarySizeException()
+        {
+            // Arrange
+            var fields = new List<Field>
+            {
+                new Field { FieldType = Meta.FieldType.Binary },
+                new Field { FieldType = Meta.FieldType.Length},
+            };
+
+            // Act
+            var str = "";
+            var exception = Record.Exception(() => str = Builder.GetTestStringFor(fields));
+
+            // Assert
+            Assert.Equal("", str);
+            Assert.IsType<InvalidOperationException>(exception);
+        }
+
+        [Fact]
+        public void TestThat_GetTestStringFor_ThrowsWhenSizeIsInvalid()
+        {
+            // Arrange
+            var fields = new List<Field>
+            {
+                new Field{DocPosition = new Range(1, -2)}
+            };
+
+            // Act
+            var str = "";
+            var exception = Record.Exception(() => str = Builder.GetTestStringFor(fields));
+
+            // Assert
+            Assert.Equal("", str);
+            Assert.IsType<ArgumentOutOfRangeException>(exception);
         }
     }
 }

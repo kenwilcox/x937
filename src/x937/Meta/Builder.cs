@@ -74,44 +74,45 @@ namespace x937.Meta
         public static string GetTestStringFor(IEnumerable<Field> meta)
         {
             var sb = new StringBuilder();
-            var previousType = ValueType.Literal;
+            var previousType = Meta.FieldType.Literal;
             var binary = string.Empty;
             foreach (var field in meta)
             {
                 var length = sb.Length;
-                switch (field.ValueType)
+                switch (field.FieldType)
                 {
-                    case ValueType.Literal: sb.Append(field.Value); break;
-                    case ValueType.RoutePattern: sb.Append("TTTTAAAAC".Substring(0, field.Size)); break; // some route patterns exclude the check digit
-                    case ValueType.Position: sb.Append("4242"); break;
-                    case ValueType.Date: sb.Append(field.Size == 8 ? "YYYYMMDD" : "HHmm"); break;
-                    case ValueType.Logical: sb.Append(GetLogical(field.Value, field.Size)); break;
-                    case ValueType.Cr61: sb.Append("CR61"); break; // CR61 is len(4)
-                    case ValueType.Blank: sb.Append(GetBlank(field.Size, field.Value)); break;
-                    case ValueType.Undefined: sb.Append(GetUndefined(field.Type, field.Size)); break;
-                    case ValueType.NBSM: sb.Append(GetRepeating('x', field.Size)); break;
-                    case ValueType.NBSMOS: sb.Append(GetRepeating('z', field.Size)); break;
-                    case ValueType.LeadingZeros: sb.Append(GetUndefined(field.Type, field.Size)); break;
-                    case ValueType.Sequence: sb.Append(GetUndefined(field.Type, field.Size)); break;
-                    case ValueType.Length:
+                    case Meta.FieldType.Literal: sb.Append(field.Value); break;
+                    case Meta.FieldType.RoutePattern: sb.Append("TTTTAAAAC".Substring(0, field.Size)); break; // some route patterns exclude the check digit
+                    case Meta.FieldType.Position: sb.Append("4242"); break;
+                    case Meta.FieldType.Date: sb.Append(field.Size == 8 ? "YYYYMMDD" : "HHmm"); break;
+                    case Meta.FieldType.Logical: sb.Append(GetLogical(field.Value, field.Size)); break;
+                    case Meta.FieldType.Cr61: sb.Append("CR61"); break; // CR61 is len(4)
+                    case Meta.FieldType.Blank: sb.Append(GetBlank(field.Size, field.Value)); break;
+                    case Meta.FieldType.Undefined: sb.Append(GetUndefined(field.Type, field.Size)); break;
+                    case Meta.FieldType.NBSM: sb.Append(GetRepeating('x', field.Size)); break;
+                    case Meta.FieldType.NBSMOS: sb.Append(GetRepeating('z', field.Size)); break;
+                    case Meta.FieldType.LeadingZeros: sb.Append(GetUndefined(field.Type, field.Size)); break;
+                    case Meta.FieldType.Sequence: sb.Append(GetUndefined(field.Type, field.Size)); break;
+                    case Meta.FieldType.Length:
                         binary = GetRandomData(Rnd.Next(2048, 65536)); // 2 - 64KB
                         sb.Append(binary.Length.ToString().PadLeft(field.Size));
                         break;
-                    case ValueType.Binary:
-                        if (previousType == ValueType.Length) sb.Append(binary);
+                    case Meta.FieldType.Binary:
+                        if (previousType == Meta.FieldType.Length) sb.Append(binary);
                         else throw new InvalidOperationException("ValueType Binary used before ValueType Length");
                         break;
                     //default: throw new NotImplementedException($"No processor for {field.ValueType}");
                 }
-                if (field.ValueType != ValueType.Binary)
-                {
-                    if (sb.Length != length + field.Size) throw new ArgumentOutOfRangeException($"Field {field.FieldName} generated a size of {sb.Length - length}, but it should have been {field.Size}");
-                }
-                else
-                {
-                    if (sb.Length != length + binary.Length) throw new ArgumentOutOfRangeException($"Field {field.FieldName} should have been {binary.Length}");
-                }
-                previousType = field.ValueType;
+                // I believe this is no longer needed...
+                //if (field.ValueType != ValueType.Binary)
+                //{
+                //    if (sb.Length != length + field.Size) throw new ArgumentOutOfRangeException($"Field {field.FieldName} generated a size of {sb.Length - length}, but it should have been {field.Size}");
+                //}
+                //else
+                //{
+                //    if (sb.Length != length + binary.Length) throw new ArgumentOutOfRangeException($"Field {field.FieldName} should have been {binary.Length}");
+                //}
+                previousType = field.FieldType;
             }
 
             return sb.ToString();
@@ -136,9 +137,9 @@ namespace x937.Meta
                 if (field.FieldName == "RecordType") continue; // part of base class, everyone has this
 
                 var fieldType = "string";
-                if (field.ValueType == ValueType.Binary) fieldType = "byte[]";
+                if (field.FieldType == Meta.FieldType.Binary) fieldType = "byte[]";
                 props.Append($"    public {fieldType} {field.FieldName} {{ get; set; }}\n");
-                if (field.ValueType != ValueType.Binary)
+                if (field.FieldType != Meta.FieldType.Binary)
                 {
                     sb.Append($"        {field.FieldName} = Data.Substring({field.Position.Start}, {field.Size});\n");
                 }
@@ -186,23 +187,23 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "01", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "StandardLevel", Usage = "M", DocPosition = new Range(3, 4), Type = "N", Value = "03", ValueType = ValueType.Literal},
-                new Field {Order = 3, FieldName = "TestFileIndicator", Usage = "M", DocPosition = new Range(5, 5), Type = "A", Value = "T|P", ValueType = ValueType.Logical},
-                new Field {Order = 4, FieldName = "ImmediateDestinationRoutingNumber", Usage = "M", DocPosition = new Range(6, 14), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 5, FieldName = "ImmediateOriginRoutingNumber", Usage = "M", DocPosition = new Range(15, 23), Type = "N", Value = "TTTTAAAACC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 6, FieldName = "FileCreationDate", Usage = "M", DocPosition = new Range(24, 31), Type = "N", Value = "YYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 7, FieldName = "FileCreationTime", Usage = "M", DocPosition = new Range(32, 35), Type = "N", Value = "HHmm", ValueType = ValueType.Date},
-                new Field {Order = 8, FieldName = "ResendIndicator", Usage = "M", DocPosition = new Range(36, 36), Type = "A", Value = "N", ValueType = ValueType.Literal},
-                new Field {Order = 9, FieldName = "ImmediateDestinationName", Usage = "M", DocPosition = new Range(37, 54), Type = "A", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 10, FieldName = "ImmediateOriginName", Usage = "C", DocPosition = new Range(55, 72), Type = "A", Value = "", ValueType = ValueType.Undefined},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "01", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "StandardLevel", Usage = "M", DocPosition = new Range(3, 4), Type = "N", Value = "03", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 3, FieldName = "TestFileIndicator", Usage = "M", DocPosition = new Range(5, 5), Type = "A", Value = "T|P", FieldType = Meta.FieldType.Logical},
+                new Field {Order = 4, FieldName = "ImmediateDestinationRoutingNumber", Usage = "M", DocPosition = new Range(6, 14), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 5, FieldName = "ImmediateOriginRoutingNumber", Usage = "M", DocPosition = new Range(15, 23), Type = "N", Value = "TTTTAAAACC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 6, FieldName = "FileCreationDate", Usage = "M", DocPosition = new Range(24, 31), Type = "N", Value = "YYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 7, FieldName = "FileCreationTime", Usage = "M", DocPosition = new Range(32, 35), Type = "N", Value = "HHmm", FieldType = Meta.FieldType.Date},
+                new Field {Order = 8, FieldName = "ResendIndicator", Usage = "M", DocPosition = new Range(36, 36), Type = "A", Value = "N", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 9, FieldName = "ImmediateDestinationName", Usage = "M", DocPosition = new Range(37, 54), Type = "A", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 10, FieldName = "ImmediateOriginName", Usage = "C", DocPosition = new Range(55, 72), Type = "A", Value = "", FieldType = Meta.FieldType.Undefined},
                 // I'm not sure how I'm going to handle field 11 yet...
                 // Value = A normally, however if fields 4,5,6, and 7 are the same values on multiple files, then this would have a unique alpha or numeric
                 //          character to make this file unique from other files, i.e., "B", "C", "0", "1", etc.
-                new Field {Order = 11, FieldName = "FileIdModifier", Usage = "C", DocPosition = new Range(73, 73), Type = "AN", Value = "A", ValueType = ValueType.Undefined},
-                new Field {Order = 12, FieldName = "CountryCode", Usage = "C", DocPosition = new Range(74, 75), Type = "A", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 13, FieldName = "UserField", Usage = "C", DocPosition = new Range(76, 79), Type = "ANS", Value = "", ValueType = ValueType.Cr61},
-                new Field {Order = 14, FieldName = "Reserved", Usage = "M", DocPosition = new Range(80, 80), Type = "B", Value = "", ValueType = ValueType.Blank}
+                new Field {Order = 11, FieldName = "FileIdModifier", Usage = "C", DocPosition = new Range(73, 73), Type = "AN", Value = "A", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 12, FieldName = "CountryCode", Usage = "C", DocPosition = new Range(74, 75), Type = "A", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 13, FieldName = "UserField", Usage = "C", DocPosition = new Range(76, 79), Type = "ANS", Value = "", FieldType = Meta.FieldType.Cr61},
+                new Field {Order = 14, FieldName = "Reserved", Usage = "M", DocPosition = new Range(80, 80), Type = "B", Value = "", FieldType = Meta.FieldType.Blank}
             };
             return fields;
         }
@@ -211,22 +212,22 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "10", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "CollectionTypeIndicator", Usage = "M", DocPosition = new Range(3, 4), Type = "N", Value = "01", ValueType = ValueType.Literal},
-                new Field {Order = 3, FieldName = "DestinationRoutingNumber", Usage = "M", DocPosition = new Range(5, 13), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 4, FieldName = "ECEInstitutionRoutingNumber", Usage = "M", DocPosition = new Range(14, 22), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 5, FieldName = "CashLetterBusinessDate", Usage = "M", DocPosition = new Range(23, 30), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 6, FieldName = "CashLetterCreationDate", Usage = "M", DocPosition = new Range(31, 38), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 7, FieldName = "CashLetterCreationTime", Usage = "M", DocPosition = new Range(39, 42), Type = "N", Value = "HHmm", ValueType = ValueType.Date},
-                new Field {Order = 8, FieldName = "CashLetterRecordTypeIndicator", Usage = "M", DocPosition = new Range(43, 43), Type = "A", Value = "I", ValueType = ValueType.Literal},
-                new Field {Order = 9, FieldName = "CashLetterDocumentationTypeIndicator", Usage = "C", DocPosition = new Range(44, 44), Type = "AN", Value = "G", ValueType = ValueType.Literal},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "10", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "CollectionTypeIndicator", Usage = "M", DocPosition = new Range(3, 4), Type = "N", Value = "01", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 3, FieldName = "DestinationRoutingNumber", Usage = "M", DocPosition = new Range(5, 13), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 4, FieldName = "ECEInstitutionRoutingNumber", Usage = "M", DocPosition = new Range(14, 22), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 5, FieldName = "CashLetterBusinessDate", Usage = "M", DocPosition = new Range(23, 30), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 6, FieldName = "CashLetterCreationDate", Usage = "M", DocPosition = new Range(31, 38), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 7, FieldName = "CashLetterCreationTime", Usage = "M", DocPosition = new Range(39, 42), Type = "N", Value = "HHmm", FieldType = Meta.FieldType.Date},
+                new Field {Order = 8, FieldName = "CashLetterRecordTypeIndicator", Usage = "M", DocPosition = new Range(43, 43), Type = "A", Value = "I", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 9, FieldName = "CashLetterDocumentationTypeIndicator", Usage = "C", DocPosition = new Range(44, 44), Type = "AN", Value = "G", FieldType = Meta.FieldType.Literal},
                 // The Cash Letter ID must be a unique number within a Cash Letter Business Date.
-                new Field {Order = 10, FieldName = "CashLetterId", Usage = "C", DocPosition = new Range(45, 52), Type = "AN", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 11, FieldName = "OriginatorContactName", Usage = "C", DocPosition = new Range(53, 66), Type = "ANS", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 12, FieldName = "OriginatorContactPhoneNumber", Usage = "C", DocPosition = new Range(67, 76), Type = "N", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 13, FieldName = "FedWorkType", Usage = "C", DocPosition = new Range(77, 77), Type = "AN", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 14, FieldName = "UserField", Usage = "C", DocPosition = new Range(78, 79), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 15, FieldName = "User", Usage = "O", DocPosition = new Range(80, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 10, FieldName = "CashLetterId", Usage = "C", DocPosition = new Range(45, 52), Type = "AN", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 11, FieldName = "OriginatorContactName", Usage = "C", DocPosition = new Range(53, 66), Type = "ANS", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 12, FieldName = "OriginatorContactPhoneNumber", Usage = "C", DocPosition = new Range(67, 76), Type = "N", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 13, FieldName = "FedWorkType", Usage = "C", DocPosition = new Range(77, 77), Type = "AN", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 14, FieldName = "UserField", Usage = "C", DocPosition = new Range(78, 79), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 15, FieldName = "User", Usage = "O", DocPosition = new Range(80, 80), Type = "B", Value = "", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -235,18 +236,18 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "20", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "CollectionTypeIndicator", Usage = "M", DocPosition = new Range(3, 4), Type = "N", Value = "01", ValueType = ValueType.Literal},
-                new Field {Order = 3, FieldName = "DestinationRoutingNumber", Usage = "M", DocPosition = new Range(5, 13), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 4, FieldName = "ECEInstitutionRoutingNumber", Usage = "M", DocPosition = new Range(14, 22), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 5, FieldName = "BatchBusinessDate", Usage = "M", DocPosition = new Range(23, 30), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 6, FieldName = "BatchCreationDate", Usage = "M", DocPosition = new Range(31, 38), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 7, FieldName = "BatchId", Usage = "M", DocPosition = new Range(39, 48), Type = "AN", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 8, FieldName = "BatchSequenceNumber", Usage = "M", DocPosition = new Range(49, 52), Type = "NB", Value = "0001", ValueType = ValueType.Position},
-                new Field {Order = 9, FieldName = "CycleNumber", Usage = "C", DocPosition = new Range(53, 54), Type = "AN", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 10, FieldName = "ReturnLocationRoutingNumber", Usage = "C", DocPosition = new Range(55, 63), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 11, FieldName = "UserField", Usage = "M", DocPosition = new Range(64, 68), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 12, FieldName = "Reserved", Usage = "M", DocPosition = new Range(69, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "20", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "CollectionTypeIndicator", Usage = "M", DocPosition = new Range(3, 4), Type = "N", Value = "01", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 3, FieldName = "DestinationRoutingNumber", Usage = "M", DocPosition = new Range(5, 13), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 4, FieldName = "ECEInstitutionRoutingNumber", Usage = "M", DocPosition = new Range(14, 22), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 5, FieldName = "BatchBusinessDate", Usage = "M", DocPosition = new Range(23, 30), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 6, FieldName = "BatchCreationDate", Usage = "M", DocPosition = new Range(31, 38), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 7, FieldName = "BatchId", Usage = "M", DocPosition = new Range(39, 48), Type = "AN", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 8, FieldName = "BatchSequenceNumber", Usage = "M", DocPosition = new Range(49, 52), Type = "NB", Value = "0001", FieldType = Meta.FieldType.Position},
+                new Field {Order = 9, FieldName = "CycleNumber", Usage = "C", DocPosition = new Range(53, 54), Type = "AN", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 10, FieldName = "ReturnLocationRoutingNumber", Usage = "C", DocPosition = new Range(55, 63), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 11, FieldName = "UserField", Usage = "M", DocPosition = new Range(64, 68), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 12, FieldName = "Reserved", Usage = "M", DocPosition = new Range(69, 80), Type = "B", Value = "", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -255,22 +256,22 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "25", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "AuxiliaryOnUs", Usage = "C", DocPosition = new Range(3, 17), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
-                new Field {Order = 3, FieldName = "ExternalProcessingCode", Usage = "C", DocPosition = new Range(18, 18), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "25", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "AuxiliaryOnUs", Usage = "C", DocPosition = new Range(3, 17), Type = "NBSM", Value = "", FieldType = Meta.FieldType.NBSM},
+                new Field {Order = 3, FieldName = "ExternalProcessingCode", Usage = "C", DocPosition = new Range(18, 18), Type = "NBSM", Value = "", FieldType = Meta.FieldType.NBSM},
                 // Everywhere else this is TTTTAAAAC, but here the C is specified....
-                new Field {Order = 4, FieldName = "PayorBankRoutingNumber", Usage = "M", DocPosition = new Range(19, 26), Type = "N", Value = "TTTTAAAA", ValueType = ValueType.RoutePattern},
-                new Field {Order = 5, FieldName = "PriorBankRoutingNumberCheckDigit", Usage = "M", DocPosition = new Range(27, 27), Type = "N", Value = "C", ValueType = ValueType.Literal},
-                new Field {Order = 6, FieldName = "OnUs", Usage = "M", DocPosition = new Range(28, 47), Type = "NBSMOS", Value = "", ValueType = ValueType.NBSMOS},
-                new Field {Order = 7, FieldName = "ItemAmount", Usage = "M", DocPosition = new Range(48, 57), Type = "N", Value = "C", ValueType = ValueType.LeadingZeros},
-                new Field {Order = 8, FieldName = "ECEInstitutionItemSequenceNumber", Usage = "M", DocPosition = new Range(58, 72), Type = "NB", Value = "", ValueType = ValueType.Sequence},
-                new Field {Order = 9, FieldName = "DocumentationTypeIndicator", Usage = "C", DocPosition = new Range(73, 73), Type = "AN", Value = "G", ValueType = ValueType.Literal},
-                new Field {Order = 10, FieldName = "ReturnAcceptanceIndicator", Usage = "C", DocPosition = new Range(74, 74), Type = "AN", Value = "6", ValueType = ValueType.Literal},
-                new Field {Order = 11, FieldName = "MICRValidIndicator", Usage = "C", DocPosition = new Range(75, 75), Type = "N", Value = "1|2|3|4", ValueType = ValueType.Logical},
-                new Field {Order = 12, FieldName = "BOFDIndicator", Usage = "M", DocPosition = new Range(76, 76), Type = "A", Value = "Y|N|U", ValueType = ValueType.Logical},
-                new Field {Order = 13, FieldName = "CheckDetailRecordAddendumCount", Usage = "M", DocPosition = new Range(77, 78), Type = "N", Value = "12", ValueType = ValueType.Literal},
-                new Field {Order = 14, FieldName = "CorrectionIndicator", Usage = "M", DocPosition = new Range(79, 79), Type = "N", Value = "0|1|2|3|4", ValueType = ValueType.Logical},
-                new Field {Order = 15, FieldName = "ArchiveTypeIndicator", Usage = "C", DocPosition = new Range(80, 80), Type = "AN", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 4, FieldName = "PayorBankRoutingNumber", Usage = "M", DocPosition = new Range(19, 26), Type = "N", Value = "TTTTAAAA", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 5, FieldName = "PriorBankRoutingNumberCheckDigit", Usage = "M", DocPosition = new Range(27, 27), Type = "N", Value = "C", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 6, FieldName = "OnUs", Usage = "M", DocPosition = new Range(28, 47), Type = "NBSMOS", Value = "", FieldType = Meta.FieldType.NBSMOS},
+                new Field {Order = 7, FieldName = "ItemAmount", Usage = "M", DocPosition = new Range(48, 57), Type = "N", Value = "C", FieldType = Meta.FieldType.LeadingZeros},
+                new Field {Order = 8, FieldName = "ECEInstitutionItemSequenceNumber", Usage = "M", DocPosition = new Range(58, 72), Type = "NB", Value = "", FieldType = Meta.FieldType.Sequence},
+                new Field {Order = 9, FieldName = "DocumentationTypeIndicator", Usage = "C", DocPosition = new Range(73, 73), Type = "AN", Value = "G", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 10, FieldName = "ReturnAcceptanceIndicator", Usage = "C", DocPosition = new Range(74, 74), Type = "AN", Value = "6", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 11, FieldName = "MICRValidIndicator", Usage = "C", DocPosition = new Range(75, 75), Type = "N", Value = "1|2|3|4", FieldType = Meta.FieldType.Logical},
+                new Field {Order = 12, FieldName = "BOFDIndicator", Usage = "M", DocPosition = new Range(76, 76), Type = "A", Value = "Y|N|U", FieldType = Meta.FieldType.Logical},
+                new Field {Order = 13, FieldName = "CheckDetailRecordAddendumCount", Usage = "M", DocPosition = new Range(77, 78), Type = "N", Value = "12", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 14, FieldName = "CorrectionIndicator", Usage = "M", DocPosition = new Range(79, 79), Type = "N", Value = "0|1|2|3|4", FieldType = Meta.FieldType.Logical},
+                new Field {Order = 15, FieldName = "ArchiveTypeIndicator", Usage = "C", DocPosition = new Range(80, 80), Type = "AN", Value = "", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -279,19 +280,19 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "26", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "CheckDetailAddendumARecordNumber", Usage = "M", DocPosition = new Range(3, 3), Type = "N", Value = "1", ValueType = ValueType.Literal},
-                new Field {Order = 3, FieldName = "BOFDRoutingNumber", Usage = "C", DocPosition = new Range(4, 12), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 4, FieldName = "BOFDBusinessDate", Usage = "C", DocPosition = new Range(13, 20), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 5, FieldName = "BOFDItemSequenceNumber", Usage = "C", DocPosition = new Range(21, 35), Type = "NB", Value = "", ValueType = ValueType.Sequence},
-                new Field {Order = 6, FieldName = "BOFDDepositAccountNumber", Usage = "C", DocPosition = new Range(36, 53), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 7, FieldName = "BOFDDepositBranch", Usage = "C", DocPosition = new Range(54, 58), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 8, FieldName = "PayeeName", Usage = "C", DocPosition = new Range(59, 73), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 9, FieldName = "TruncationIndicator", Usage = "C", DocPosition = new Range(74, 74), Type = "A", Value = "Y", ValueType = ValueType.Literal},
-                new Field {Order = 10, FieldName = "BOFDConversionIndicator", Usage = "C", DocPosition = new Range(75, 75), Type = "AN", Value = "2", ValueType = ValueType.Literal},
-                new Field {Order = 11, FieldName = "BOFDCorrectionIndicator", Usage = "C", DocPosition = new Range(76, 76), Type = "N", Value = "0", ValueType = ValueType.Literal},
-                new Field {Order = 12, FieldName = "UserField", Usage = "C", DocPosition = new Range(77, 77), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "26", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "CheckDetailAddendumARecordNumber", Usage = "M", DocPosition = new Range(3, 3), Type = "N", Value = "1", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 3, FieldName = "BOFDRoutingNumber", Usage = "C", DocPosition = new Range(4, 12), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 4, FieldName = "BOFDBusinessDate", Usage = "C", DocPosition = new Range(13, 20), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 5, FieldName = "BOFDItemSequenceNumber", Usage = "C", DocPosition = new Range(21, 35), Type = "NB", Value = "", FieldType = Meta.FieldType.Sequence},
+                new Field {Order = 6, FieldName = "BOFDDepositAccountNumber", Usage = "C", DocPosition = new Range(36, 53), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 7, FieldName = "BOFDDepositBranch", Usage = "C", DocPosition = new Range(54, 58), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 8, FieldName = "PayeeName", Usage = "C", DocPosition = new Range(59, 73), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 9, FieldName = "TruncationIndicator", Usage = "C", DocPosition = new Range(74, 74), Type = "A", Value = "Y", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 10, FieldName = "BOFDConversionIndicator", Usage = "C", DocPosition = new Range(75, 75), Type = "AN", Value = "2", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 11, FieldName = "BOFDCorrectionIndicator", Usage = "C", DocPosition = new Range(76, 76), Type = "N", Value = "0", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 12, FieldName = "UserField", Usage = "C", DocPosition = new Range(77, 77), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -300,23 +301,23 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "50", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "ImageIndicator", Usage = "M", DocPosition = new Range(3, 3), Type = "N", Value = "1", ValueType = ValueType.Literal},
-                new Field {Order = 3, FieldName = "ImageCreatorRoutingNumber", Usage = "M", DocPosition = new Range(4, 12), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 4, FieldName = "ImageCreatorDate", Usage = "M", DocPosition = new Range(13, 20), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 5, FieldName = "ImageViewFormatIndicator", Usage = "M", DocPosition = new Range(21, 22), Type = "N", Value = "0 ", ValueType = ValueType.Literal},
-                new Field {Order = 6, FieldName = "ImageViewCompressionAlgorithmIdentifier", Usage = "M", DocPosition = new Range(23, 24), Type = "N", Value = "0 ", ValueType = ValueType.Literal},
-                new Field {Order = 7, FieldName = "ImageViewDataSize", Usage = "C", DocPosition = new Range(25, 31), Type = "N", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 8, FieldName = "ViewSideIndicator", Usage = "M", DocPosition = new Range(32, 32), Type = "N", Value = "0|1", ValueType = ValueType.Logical},
-                new Field {Order = 9, FieldName = "ViewDescriptor", Usage = "M", DocPosition = new Range(33, 34), Type = "N", Value = "0 ", ValueType = ValueType.Literal},
-                new Field {Order = 10, FieldName = "DigitalSignatureIndicator", Usage = "M", DocPosition = new Range(35, 35), Type = "NB", Value = "0", ValueType = ValueType.Literal},
-                new Field {Order = 11, FieldName = "DigitalSignatureMethod", Usage = "C", DocPosition = new Range(36, 37), Type = "N", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 12, FieldName = "SecurityKeySize", Usage = "C", DocPosition = new Range(38, 42), Type = "N", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 13, FieldName = "StartOfProtectedData", Usage = "C", DocPosition = new Range(43, 49), Type = "N", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 14, FieldName = "LengthOfProtectedData", Usage = "C", DocPosition = new Range(50, 56), Type = "N", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 15, FieldName = "ImageRecreateIndicator", Usage = "C", DocPosition = new Range(57, 57), Type = "N", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 16, FieldName = "UserField", Usage = "C", DocPosition = new Range(58, 65), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 17, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "50", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "ImageIndicator", Usage = "M", DocPosition = new Range(3, 3), Type = "N", Value = "1", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 3, FieldName = "ImageCreatorRoutingNumber", Usage = "M", DocPosition = new Range(4, 12), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 4, FieldName = "ImageCreatorDate", Usage = "M", DocPosition = new Range(13, 20), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 5, FieldName = "ImageViewFormatIndicator", Usage = "M", DocPosition = new Range(21, 22), Type = "N", Value = "0 ", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 6, FieldName = "ImageViewCompressionAlgorithmIdentifier", Usage = "M", DocPosition = new Range(23, 24), Type = "N", Value = "0 ", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 7, FieldName = "ImageViewDataSize", Usage = "C", DocPosition = new Range(25, 31), Type = "N", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 8, FieldName = "ViewSideIndicator", Usage = "M", DocPosition = new Range(32, 32), Type = "N", Value = "0|1", FieldType = Meta.FieldType.Logical},
+                new Field {Order = 9, FieldName = "ViewDescriptor", Usage = "M", DocPosition = new Range(33, 34), Type = "N", Value = "0 ", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 10, FieldName = "DigitalSignatureIndicator", Usage = "M", DocPosition = new Range(35, 35), Type = "NB", Value = "0", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 11, FieldName = "DigitalSignatureMethod", Usage = "C", DocPosition = new Range(36, 37), Type = "N", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 12, FieldName = "SecurityKeySize", Usage = "C", DocPosition = new Range(38, 42), Type = "N", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 13, FieldName = "StartOfProtectedData", Usage = "C", DocPosition = new Range(43, 49), Type = "N", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 14, FieldName = "LengthOfProtectedData", Usage = "C", DocPosition = new Range(50, 56), Type = "N", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 15, FieldName = "ImageRecreateIndicator", Usage = "C", DocPosition = new Range(57, 57), Type = "N", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 16, FieldName = "UserField", Usage = "C", DocPosition = new Range(58, 65), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 17, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -325,30 +326,30 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "52", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "ECEInstitutionRoutingNumber", Usage = "M", DocPosition = new Range(3, 11), Type = "N", Value = "TTTTAAAAC", ValueType = ValueType.RoutePattern},
-                new Field {Order = 3, FieldName = "BatchBusinessDate", Usage = "M", DocPosition = new Range(12, 19), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 4, FieldName = "CycleNumber", Usage = "M", DocPosition = new Range(20, 21), Type = "AN", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 5, FieldName = "ECEInstitutionItemSequenceNumber", Usage = "M", DocPosition = new Range(22, 36), Type = "NB", Value = "", ValueType = ValueType.Sequence},
-                new Field {Order = 6, FieldName = "SecurityOriginatorName", Usage = "C", DocPosition = new Range(37, 52), Type = "ANS", Value = "x", ValueType = ValueType.Blank},
-                new Field {Order = 7, FieldName = "SecurityAuthenticator", Usage = "C", DocPosition = new Range(53, 68), Type = "ANS", Value = "v", ValueType = ValueType.Blank},
-                new Field {Order = 8, FieldName = "SecurityKeyName", Usage = "C", DocPosition = new Range(69, 84), Type = "ANS", Value = "*", ValueType = ValueType.Blank},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "52", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "ECEInstitutionRoutingNumber", Usage = "M", DocPosition = new Range(3, 11), Type = "N", Value = "TTTTAAAAC", FieldType = Meta.FieldType.RoutePattern},
+                new Field {Order = 3, FieldName = "BatchBusinessDate", Usage = "M", DocPosition = new Range(12, 19), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 4, FieldName = "CycleNumber", Usage = "M", DocPosition = new Range(20, 21), Type = "AN", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 5, FieldName = "ECEInstitutionItemSequenceNumber", Usage = "M", DocPosition = new Range(22, 36), Type = "NB", Value = "", FieldType = Meta.FieldType.Sequence},
+                new Field {Order = 6, FieldName = "SecurityOriginatorName", Usage = "C", DocPosition = new Range(37, 52), Type = "ANS", Value = "x", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 7, FieldName = "SecurityAuthenticator", Usage = "C", DocPosition = new Range(53, 68), Type = "ANS", Value = "v", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 8, FieldName = "SecurityKeyName", Usage = "C", DocPosition = new Range(69, 84), Type = "ANS", Value = "*", FieldType = Meta.FieldType.Blank},
 
-                new Field {Order = 9, FieldName = "ClippingOrigin", Usage = "M", DocPosition = new Range(85, 85), Type = "NB", Value = "0", ValueType = ValueType.Literal},
-                new Field {Order = 10, FieldName = "ClippingCoordinateH1", Usage = "C", DocPosition = new Range(86, 89), Type = "N", Value = "#", ValueType = ValueType.Blank},
-                new Field {Order = 11, FieldName = "ClippingCoordinateH2", Usage = "C", DocPosition = new Range(90, 93), Type = "N", Value = "^", ValueType = ValueType.Blank},
-                new Field {Order = 12, FieldName = "ClippingCoordinateV1", Usage = "C", DocPosition = new Range(94, 97), Type = "N", Value = "x", ValueType = ValueType.Blank},
-                new Field {Order = 13, FieldName = "ClippingCoordinateV2", Usage = "C", DocPosition = new Range(98, 101), Type = "N", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 14, FieldName = "LengthOfImageReferenceKey", Usage = "M", DocPosition = new Range(102, 105), Type = "NB", Value = "0000", ValueType = ValueType.Literal},
+                new Field {Order = 9, FieldName = "ClippingOrigin", Usage = "M", DocPosition = new Range(85, 85), Type = "NB", Value = "0", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 10, FieldName = "ClippingCoordinateH1", Usage = "C", DocPosition = new Range(86, 89), Type = "N", Value = "#", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 11, FieldName = "ClippingCoordinateH2", Usage = "C", DocPosition = new Range(90, 93), Type = "N", Value = "^", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 12, FieldName = "ClippingCoordinateV1", Usage = "C", DocPosition = new Range(94, 97), Type = "N", Value = "x", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 13, FieldName = "ClippingCoordinateV2", Usage = "C", DocPosition = new Range(98, 101), Type = "N", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 14, FieldName = "LengthOfImageReferenceKey", Usage = "M", DocPosition = new Range(102, 105), Type = "NB", Value = "0000", FieldType = Meta.FieldType.Literal},
 
                 // I'm not sure at all about these yet....
                 //new Field {Order = 15, FieldName = "ImageReferenceKey", Usage = "C", DocPosition = new Range(106, 110), Type = "N", Value = "52", ValueType = ValueType.Literal},
-                new Field {Order = 15, FieldName = "LengthOfDigitalSignature", Usage = "M", DocPosition = new Range(106, 110), Type = "N", Value = "00000", ValueType = ValueType.Literal},
+                new Field {Order = 15, FieldName = "LengthOfDigitalSignature", Usage = "M", DocPosition = new Range(106, 110), Type = "N", Value = "00000", FieldType = Meta.FieldType.Literal},
                 //new Field {Order = 17, FieldName = "DigitalSignature", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "52", ValueType = ValueType.Literal},
 
-                new Field {Order = 16, FieldName = "LengthOfImageData", Usage = "M", DocPosition = new Range(111, 117), Type = "N", Value = "", ValueType = ValueType.Length},
+                new Field {Order = 16, FieldName = "LengthOfImageData", Usage = "M", DocPosition = new Range(111, 117), Type = "N", Value = "", FieldType = Meta.FieldType.Length},
                 // This is from start position to the end... what ever that may be
-                new Field {Order = 17, FieldName = "ImageData", Usage = "M", DocPosition = new Range(118, Utils.EndOfString), Type = "Binary", Value = "", ValueType = ValueType.Binary},
+                new Field {Order = 17, FieldName = "ImageData", Usage = "M", DocPosition = new Range(118, Utils.EndOfString), Type = "Binary", Value = "", FieldType = Meta.FieldType.Binary},
             };
             return fields;
         }
@@ -357,19 +358,19 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "61", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "AuxiliaryOnUs", Usage = "M", DocPosition = new Range(3, 17), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
-                new Field {Order = 3, FieldName = "ExternalProcessingCode", Usage = "C", DocPosition = new Range(18, 18), Type = "ANS", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 4, FieldName = "PayorBankRoutingNumber", Usage = "M", DocPosition = new Range(19, 27), Type = "N", Value = "522000410", ValueType = ValueType.Literal},
-                new Field {Order = 5, FieldName = "CreditAccountNumberOnUs", Usage = "C", DocPosition = new Range(28, 47), Type = "NBSM", Value = "", ValueType = ValueType.NBSM},
-                new Field {Order = 6, FieldName = "ItemAccount", Usage = "M", DocPosition = new Range(48, 57), Type = "N", Value = "9999999999", ValueType = ValueType.Literal},
-                new Field {Order = 7, FieldName = "ECEInstitutionItemNumber", Usage = "M", DocPosition = new Range(58, 72), Type = "NB", Value = "", ValueType = ValueType.Sequence},
-                new Field {Order = 8, FieldName = "DocumentationTypeIndicator", Usage = "C", DocPosition = new Range(73, 73), Type = "AN", Value = "*", ValueType = ValueType.Blank},
-                new Field {Order = 9, FieldName = "TypeOfAccountCode", Usage = "C", DocPosition = new Range(74, 74), Type = "AN", Value = "-", ValueType = ValueType.Blank},
-                new Field {Order = 10, FieldName = "SourceOfWorkCode", Usage = "C", DocPosition = new Range(75, 75), Type = "AN", Value = "^", ValueType = ValueType.Blank},
-                new Field {Order = 11, FieldName = "WorkType", Usage = "C", DocPosition = new Range(76, 76), Type = "AN", Value = "", ValueType = ValueType.Blank},
-                new Field {Order = 12, FieldName = "DebitCreditIndicator", Usage = "C", DocPosition = new Range(77, 77), Type = "AN", Value = "#", ValueType = ValueType.Blank},
-                new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "*", ValueType = ValueType.Blank},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "61", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "AuxiliaryOnUs", Usage = "M", DocPosition = new Range(3, 17), Type = "NBSM", Value = "", FieldType = Meta.FieldType.NBSM},
+                new Field {Order = 3, FieldName = "ExternalProcessingCode", Usage = "C", DocPosition = new Range(18, 18), Type = "ANS", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 4, FieldName = "PayorBankRoutingNumber", Usage = "M", DocPosition = new Range(19, 27), Type = "N", Value = "522000410", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 5, FieldName = "CreditAccountNumberOnUs", Usage = "C", DocPosition = new Range(28, 47), Type = "NBSM", Value = "", FieldType = Meta.FieldType.NBSM},
+                new Field {Order = 6, FieldName = "ItemAccount", Usage = "M", DocPosition = new Range(48, 57), Type = "N", Value = "9999999999", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 7, FieldName = "ECEInstitutionItemNumber", Usage = "M", DocPosition = new Range(58, 72), Type = "NB", Value = "", FieldType = Meta.FieldType.Sequence},
+                new Field {Order = 8, FieldName = "DocumentationTypeIndicator", Usage = "C", DocPosition = new Range(73, 73), Type = "AN", Value = "*", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 9, FieldName = "TypeOfAccountCode", Usage = "C", DocPosition = new Range(74, 74), Type = "AN", Value = "-", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 10, FieldName = "SourceOfWorkCode", Usage = "C", DocPosition = new Range(75, 75), Type = "AN", Value = "^", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 11, FieldName = "WorkType", Usage = "C", DocPosition = new Range(76, 76), Type = "AN", Value = "", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 12, FieldName = "DebitCreditIndicator", Usage = "C", DocPosition = new Range(77, 77), Type = "AN", Value = "#", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 13, FieldName = "Reserved", Usage = "M", DocPosition = new Range(78, 80), Type = "B", Value = "*", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -378,13 +379,13 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "70", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "ItemsWithinBatchCount", Usage = "M", DocPosition = new Range(3, 6), Type = "N", Value = "0000", ValueType = ValueType.Literal},
-                new Field {Order = 3, FieldName = "BatchTotalAmount", Usage = "M", DocPosition = new Range(7, 18), Type = "N", Value = "xxxxxxxxxxxx", ValueType = ValueType.Literal},
-                new Field {Order = 4, FieldName = "MICRValidTotalAmount", Usage = "C", DocPosition = new Range(19, 30), Type = "N", Value = "9", ValueType = ValueType.Blank},
-                new Field {Order = 5, FieldName = "ImagesWithinBatchCount", Usage = "C", DocPosition = new Range(31, 35), Type = "N", Value = "-", ValueType = ValueType.Blank},
-                new Field {Order = 6, FieldName = "UserField", Usage = "C", DocPosition = new Range(36, 55), Type = "ANS", Value = "*", ValueType = ValueType.Blank},
-                new Field {Order = 7, FieldName = "Reserved", Usage = "M", DocPosition = new Range(56, 80), Type = "B", Value = "#", ValueType = ValueType.Blank},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "70", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "ItemsWithinBatchCount", Usage = "M", DocPosition = new Range(3, 6), Type = "N", Value = "0000", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 3, FieldName = "BatchTotalAmount", Usage = "M", DocPosition = new Range(7, 18), Type = "N", Value = "xxxxxxxxxxxx", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 4, FieldName = "MICRValidTotalAmount", Usage = "C", DocPosition = new Range(19, 30), Type = "N", Value = "9", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 5, FieldName = "ImagesWithinBatchCount", Usage = "C", DocPosition = new Range(31, 35), Type = "N", Value = "-", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 6, FieldName = "UserField", Usage = "C", DocPosition = new Range(36, 55), Type = "ANS", Value = "*", FieldType = Meta.FieldType.Blank},
+                new Field {Order = 7, FieldName = "Reserved", Usage = "M", DocPosition = new Range(56, 80), Type = "B", Value = "#", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -393,15 +394,15 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "90", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "BatchCount", Usage = "M", DocPosition = new Range(3, 8), Type = "N", Value = "999999", ValueType = ValueType.Literal},
-                new Field {Order = 3, FieldName = "ItemsWithinCashLetterCount", Usage = "M", DocPosition = new Range(9, 16), Type = "N", Value = "0", ValueType = ValueType.Undefined},
-                new Field {Order = 4, FieldName = "CashLetterTotalAmount", Usage = "M", DocPosition = new Range(17, 30), Type = "N", Value = "9", ValueType = ValueType.Undefined},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "90", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "BatchCount", Usage = "M", DocPosition = new Range(3, 8), Type = "N", Value = "999999", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 3, FieldName = "ItemsWithinCashLetterCount", Usage = "M", DocPosition = new Range(9, 16), Type = "N", Value = "0", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 4, FieldName = "CashLetterTotalAmount", Usage = "M", DocPosition = new Range(17, 30), Type = "N", Value = "9", FieldType = Meta.FieldType.Undefined},
                 // Docs state A, but it should be N, since it's a number
-                new Field {Order = 5, FieldName = "ImagesWithinCashLetterCount", Usage = "C", DocPosition = new Range(31, 39), Type = "N", Value = "2", ValueType = ValueType.Undefined},
-                new Field {Order = 6, FieldName = "CustomerName", Usage = "C", DocPosition = new Range(40, 57), Type = "A", Value = "x", ValueType = ValueType.Undefined},
-                new Field {Order = 7, FieldName = "CreditDate", Usage = "C", DocPosition = new Range(58, 65), Type = "N", Value = "YYYYMMDD", ValueType = ValueType.Date},
-                new Field {Order = 8, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 5, FieldName = "ImagesWithinCashLetterCount", Usage = "C", DocPosition = new Range(31, 39), Type = "N", Value = "2", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 6, FieldName = "CustomerName", Usage = "C", DocPosition = new Range(40, 57), Type = "A", Value = "x", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 7, FieldName = "CreditDate", Usage = "C", DocPosition = new Range(58, 65), Type = "N", Value = "YYYYMMDD", FieldType = Meta.FieldType.Date},
+                new Field {Order = 8, FieldName = "Reserved", Usage = "M", DocPosition = new Range(66, 80), Type = "B", Value = "", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
@@ -410,14 +411,14 @@ namespace x937.Meta
         {
             var fields = new List<Field>
             {
-                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "99", ValueType = ValueType.Literal},
-                new Field {Order = 2, FieldName = "CashLetterCount", Usage = "M", DocPosition = new Range(3, 8), Type = "N", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 3, FieldName = "TotalRecordCount", Usage = "M", DocPosition = new Range(9, 16), Type = "N", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 4, FieldName = "TotalItemCount", Usage = "M", DocPosition = new Range(17, 24), Type = "N", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 5, FieldName = "FileTotalAmount", Usage = "M", DocPosition = new Range(25, 40), Type = "N", Value = "", ValueType = ValueType.Undefined},
-                new Field {Order = 6, FieldName = "ImmediateOriginContactName", Usage = "C", DocPosition = new Range(41, 54), Type = "ANS", Value = "99", ValueType = ValueType.Undefined},
-                new Field {Order = 7, FieldName = "ImmediateOriginContactPhoneNumber", Usage = "C", DocPosition = new Range(55, 64), Type = "N", Value = "99", ValueType = ValueType.Undefined},
-                new Field {Order = 8, FieldName = "Reserved", Usage = "M", DocPosition = new Range(65, 80), Type = "B", Value = "", ValueType = ValueType.Blank},
+                new Field {Order = 1, FieldName = "RecordType", Usage = "M", DocPosition = new Range(1, 2), Type = "N", Value = "99", FieldType = Meta.FieldType.Literal},
+                new Field {Order = 2, FieldName = "CashLetterCount", Usage = "M", DocPosition = new Range(3, 8), Type = "N", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 3, FieldName = "TotalRecordCount", Usage = "M", DocPosition = new Range(9, 16), Type = "N", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 4, FieldName = "TotalItemCount", Usage = "M", DocPosition = new Range(17, 24), Type = "N", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 5, FieldName = "FileTotalAmount", Usage = "M", DocPosition = new Range(25, 40), Type = "N", Value = "", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 6, FieldName = "ImmediateOriginContactName", Usage = "C", DocPosition = new Range(41, 54), Type = "ANS", Value = "99", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 7, FieldName = "ImmediateOriginContactPhoneNumber", Usage = "C", DocPosition = new Range(55, 64), Type = "N", Value = "99", FieldType = Meta.FieldType.Undefined},
+                new Field {Order = 8, FieldName = "Reserved", Usage = "M", DocPosition = new Range(65, 80), Type = "B", Value = "", FieldType = Meta.FieldType.Blank},
             };
             return fields;
         }
